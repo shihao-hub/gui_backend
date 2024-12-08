@@ -1,0 +1,10 @@
+# (TD)!: python 依赖管理工具有哪些？requirements.txt 太难用了
+# python3.12
+django-ninja
+django-ninja-crud
+django-ninja-extra
+redis
+mongo
+mongoengine
+requests
+aiohttp

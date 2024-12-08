@@ -40,9 +40,10 @@ INSTALLED_APPS = [
 
     "ninja",
     "ninja_crud",
+    "ninja_extra",
 
-    "api",
-    "core",
+    "apps.api",
+    "apps.core",
 ]
 
 MIDDLEWARE = [

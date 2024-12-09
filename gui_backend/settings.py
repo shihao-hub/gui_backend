@@ -9,12 +9,11 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-03=_xovz8!7iye4cm-_l5)qqg(h-647!+--#3y1eub8w=1n8-i
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -76,7 +74,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gui_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -87,6 +84,53 @@ DATABASES = {
     }
 }
 
+# 日志配置
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # 不禁用现有的日志器
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} - {levelname} - {message}',  # {name}
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'simple': {
+            'format': '{levelname} - {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'django_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django.log'),  # 日志文件路径
+            'formatter': 'verbose',
+            'level': 'DEBUG',  # 记录 DEBUG 及以上级别的日志
+        },
+        'print_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/service.log'),  # 日志文件路径
+            'formatter': 'verbose',
+            'level': 'DEBUG',  # 记录 DEBUG 及以上级别的日志
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['django_file'],  # 使用 console 和 file 处理器
+            'level': 'DEBUG',  # 记录 DEBUG 及以上级别的日志
+            'propagate': True,  # 日志传播
+        },
+        'print': {  # 这里替换为您的 Django 应用名称
+            'handlers': ['print_file'],
+            'level': 'DEBUG',
+            'propagate': False,  # 如果不想传递给父日志
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -106,7 +150,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -117,7 +160,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

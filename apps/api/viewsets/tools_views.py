@@ -6,7 +6,7 @@ import sqlite3
 import traceback
 from pathlib import Path
 from re import Pattern
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from django.core.cache import cache
 from django.http import HttpRequest, HttpResponse
@@ -70,6 +70,16 @@ class CommentCollector:
             res[file.name] += self._collect_comments_by_pattern(re.compile(rf"\({mode}\)!:\s*(.*)"), content_str)
 
         return success_response({"data": res})
+
+
+@router.post("/format_markdown", summary="格式化 markdown 文件")
+def format_markdown(request: HttpRequest, grave_accent: Optional[bool] = None, file: UploadedFile = File(...)):
+    """
+    格式化 markdown 文件
+    - 中英文间隔一个空格，形如标题这般
+    - 增加开关，用于控制是否需要在英文句子的前后加 "```"
+    """
+    return success_response(data=file.read().decode("utf-8"))
 
 
 @router.get("/base64_encoding_list", summary="获得支持的编码列表")

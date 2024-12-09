@@ -97,7 +97,7 @@ def handle_base64(request: HttpRequest, data: ToolsBase64RequestSchema):
         decoded_text = base64_decoded.decode(data.response_encoding.value)
 
         res = decoded_text
-    return success_response({"text": res})
+    return success_response(data={"text": res})
 
 
 def _get_file_path_by_sqlite_memory_mode(name: str) -> Path:

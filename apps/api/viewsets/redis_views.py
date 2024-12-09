@@ -6,9 +6,13 @@ from django.http import HttpRequest
 from ninja import Router
 from ninja_extra import api_controller, http_get, http_post, http_put, http_delete
 
-from apps.api.schemas import RedisTodoListItemSchema, generic_success_error_responses
-from apps.api.views import api
+from apps.api.schemasets.redis_schemas import RedisTodoListItemSchema
+from apps.api.shared.utils import success_response, error_response
+from apps.api.shared.singleton import Singleton
+from apps.core.shared.log import Log
 
+api = Singleton.api
+log = Log()
 router = Router(tags=["redis"])
 api.add_router("/redis", router)
 
@@ -29,31 +33,28 @@ class TodoListController:
 
     TODO_LIST_KEY = "api:redis:todo_list"  # redis list
 
-    @http_post("/add", response=generic_success_error_responses, summary="添加待办事项")
+    @http_post("/add", summary="添加待办事项")
     def add_todo(self, request: HttpRequest, data: RedisTodoListItemSchema):
         value = data.value
         res = db.rpush(self.TODO_LIST_KEY, value.encode("utf-8"))
-        return {"data": {"id": str(res)}}
+        data = {"id": str(res)}
+        return success_response({"data": data})
 
-    @http_get("/list", response=generic_success_error_responses, summary="查看所有待办事项")
+    @http_get("/list", summary="查看所有待办事项")
     def view_todos(self):
         todos = db.lrange(self.TODO_LIST_KEY, 0, -1)
         # 注意，返回的 todos 是 bytes 列表，需要转为 str 才能被 JSON 序列化
-        return {"data": [e.decode("utf-8") for e in todos]}
+        return success_response({"data": [e.decode("utf-8") for e in todos]})
 
-    @http_delete("/delete", response=generic_success_error_responses, summary="删除指定索引的待办事项")
+    @http_delete("/delete", summary="删除指定索引的待办事项")
     def delete_todo(self, request: HttpRequest, index: int):
         todos = db.lrange(self.TODO_LIST_KEY, 0, -1)
         # check the index range
         if index < 1 or index > len(todos):
-            return api.create_response(
-                request,
-                {"message": "Out of index range"},
-                status=400
-            )
+            return error_response({"message": "Out of index range"})
         todo_task_delete = todos[index - 1]
         db.lrem(self.TODO_LIST_KEY, 1, todo_task_delete)
-        return {"message": f"delete todo task: {index} successfully."}
+        return success_response({"message": f"delete todo task: {index} successfully."})
 
 
 api.register_controllers(TodoListController)

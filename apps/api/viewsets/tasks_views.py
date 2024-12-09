@@ -1,16 +1,23 @@
+import traceback
+
 from django.http import HttpRequest, HttpResponse
 from ninja import Router
 
-from apps.api.schemas import SuccessSchema, ErrorSchema, TasksTimedMessageRequestSchema
-from apps.api.views import api
+from apps.api.schemasets.tasks_schemas import TasksTimedMessageRequestSchema
+from apps.api.shared.utils import success_response, error_response
 from apps.api.viewsets.widgets import timed_message
+from apps.api.shared.singleton import Singleton
+from apps.core.shared.log import Log
+
+api = Singleton.api
+log = Log()
 
 router = Router(tags=["tasks"])
 api.add_router("/tasks", router)
 
 
 # 为什么必须设置 200 和 其他？200 为什么没有默认值？那这样的话我不如封装一个 response 函数呢...
-@router.post("/timed_message", response={200: SuccessSchema, 503: ErrorSchema}, summary="定时发送信息")
+@router.post("/timed_message", summary="定时发送信息")
 def timed_message(request: HttpRequest, data: TasksTimedMessageRequestSchema):
     """
         **定时发送信息**
@@ -26,7 +33,7 @@ def timed_message(request: HttpRequest, data: TasksTimedMessageRequestSchema):
     """
 
     try:
-        return 200, {"message": f"{data}"}
+        return success_response({"message": f"{data}"})
     except Exception as e:
-        # log.error(f"{e}\n{traceback.format_exc()}")
-        return 503, {"message": "Service Unavailable", "reason": f"{e.__class__}: {e}"}
+        log.error(f"{e}\n{traceback.format_exc()}")
+        return error_response({"message": "Service Unavailable", "reason": f"{e.__class__}: {e}"})

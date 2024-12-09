@@ -1,4 +1,4 @@
-# (TD)!: python 依赖管理工具有哪些？requirements.txt 太难用了
+# (TD)!: python 依赖管理工具有哪些？requirements.txt 太难用了。（我绷不住了... pip install -r requirements.txt 中文提示编码问题...）
 # python3.12
 django-ninja
 django-ninja-crud
@@ -8,3 +8,5 @@ mongo
 mongoengine
 requests
 aiohttp
+uvicorn
+starlette

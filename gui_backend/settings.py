@@ -45,11 +45,6 @@ INSTALLED_APPS = [
     "ninja_extra",
 
     "apps.api",
-
-    "apps.ninja_async",
-    "apps.ninja_exercise",
-    "apps.ninja_redis",
-    "apps.ninja_tool",
 ]
 
 MIDDLEWARE = [

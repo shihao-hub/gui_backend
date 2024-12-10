@@ -18,11 +18,9 @@ from django.contrib import admin
 from django.urls import path
 
 from gui_backend.api import api
-from gui_backend.api_v2 import api as api_v2
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('api/v1/', api.urls),
-    path('api/', api_v2.urls),
+    path('api/', api.urls),
 ]

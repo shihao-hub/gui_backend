@@ -5,6 +5,11 @@ from ninja import Schema, Field, UploadedFile
 from pydantic import validator, field_validator, root_validator
 
 
+class FormatMarkDownResp(Schema):
+    # TODO: 不止能不能这样
+    file: UploadedFile
+
+
 class Base64Request(Schema):
     class ModeEnum(enum.Enum):
         ENCODE = 0

@@ -1,46 +1,31 @@
-from typing import Dict, Optional
+import os
+from typing import List
 
-from ninja.responses import Response
+from ninja import NinjaAPI, Router
 
-from apps.api.schemasets import SuccessSchema, ErrorSchema
+from apps.api.schemas import SuccessSchema, ErrorSchema
 
-generic_success_error_responses = {200: SuccessSchema, 400: ErrorSchema}
-
-
-def _create_response(success: bool, response_dict: Dict) -> Response:
-    status = 200 if success else 400
-    json_data = generic_success_error_responses.get(status)(**response_dict).dict()
-    return Response(json_data, status=status)
+generic_response = {200: SuccessSchema, 400: ErrorSchema}
 
 
 # 2024-12-09：
-# 形如 api.get(response=generic_success_error_responses) 重复度太高，
+# 形如 api.get(response=generic_response) 重复度太高，
 # 以我目前的理解，返回 success、error Response 更方便
 # ninja 提供 response 肯定由它的道理的，只是我不太理解罢了
 # 猜测1：可能是为了 api/docs 详细点？但我直接约定不行吗？默认 200、400 的结构。约定大于配置不好吗？何必代码里重复那么多？
 
-def _insert_if_exist(inst: Dict, key: str, value):
-    if value:
-        inst[key] = value
 
+def get_registered_router(api: NinjaAPI, file: str, extra_tags: List = None) -> Router:
+    # 2024-12-10：这个不太好，隐藏了许多东西。直接手写并没有太麻烦！如非必要，勿增实体！
+    main_tag = os.path.splitext(os.path.basename(file))[0]
+    extra_tags = extra_tags if extra_tags else []
 
-def success_response(_: Optional[Dict] = None, message=None, data=None) -> Response:
-    # 响应结构为 SuccessSchema 的结构
-    # response_dict（即第一个参数） 似乎不需要再用了，此处保留是为了兼容之前的代码
-    # 虽然强迫症可能会绝对难受，但是编程就是如此。哪怕一个小项目，也会因为之前的代码而苦恼...
-    response_dict = _ if _ else {}
+    tags = [main_tag]
 
-    _insert_if_exist(response_dict, "message", message)
-    _insert_if_exist(response_dict, "data", data)
+    for e in extra_tags:
+        if e not in tags:
+            tags.append(e)
 
-    return _create_response(True, response_dict)
-
-
-def error_response(_: Optional[Dict] = None, message=None, reason=None, data=None) -> Response:
-    response_dict = _ if _ else {}
-
-    _insert_if_exist(response_dict, "message", message)
-    _insert_if_exist(response_dict, "reason", reason)
-    _insert_if_exist(response_dict, "data", data)
-
-    return _create_response(False, response_dict)
+    router = Router()
+    api.add_router(f"/{main_tag}", router, tags=tags)
+    return router

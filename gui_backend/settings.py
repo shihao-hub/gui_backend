@@ -45,7 +45,11 @@ INSTALLED_APPS = [
     "ninja_extra",
 
     "apps.api",
-    "apps.core",
+
+    "apps.ninja_async",
+    "apps.ninja_exercise",
+    "apps.ninja_redis",
+    "apps.ninja_tool",
 ]
 
 MIDDLEWARE = [
@@ -113,12 +117,14 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/django.log'),  # 日志文件路径
             'formatter': 'verbose',
+            'encoding': 'utf-8',  # 2024-12-11：怎么还要设置这个，不设置会乱码...
             'level': 'DEBUG',  # 记录 DEBUG 及以上级别的日志
         },
         'print_file': {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/service.log'),  # 日志文件路径
             'formatter': 'verbose',
+            'encoding': 'utf-8',
             'level': 'DEBUG',  # 记录 DEBUG 及以上级别的日志
         },
     },

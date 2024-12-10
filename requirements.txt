@@ -3,12 +3,19 @@
 django-ninja
 django-ninja-crud
 django-ninja-extra
+
 redis
 mongo
 mongoengine
+
 requests
 aiohttp
+
 orjson
+
+pangu
+chardet
+
 uvicorn
 starlette
 # logfire # -> logfire.exceptions.LogfireConfigError: Failed to request a device code.

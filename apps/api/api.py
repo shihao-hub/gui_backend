@@ -9,7 +9,7 @@ from apps.api.viewsets.tool import router as tool_router
 
 router = Router()
 
-router.add_router("/chatgpt", chatgpt_router)
+router.add_router("/chatgpt", chatgpt_router) # "apps.api.viewsets.chatgpt" 为什么不行？
 router.add_router("/crud", crud_router)
 router.add_router("/exercise", exercise_router)
 router.add_router("/redis", redis_router)

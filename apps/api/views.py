@@ -12,6 +12,8 @@ from apps.api import exceptionsets  # NOQA
 # 有没有更好的办法？
 from apps.api import viewsets  # NOQA
 
+# 2024-12-10：约定，形如 ...sets 的目录都是需要被全部导入的目录
+
 # 2024-12-09：
 # 找到更好的办法了！ninja 文档里的 router，可以类似 django 的 include 的自动引入
 # ninja router 使用案例：
@@ -27,3 +29,11 @@ from apps.api import viewsets  # NOQA
 # from apps.api.viewsets.tools_views import router as tools_router
 # api.add_router("/tools", tools_router)
 # 上面这样可以，但是 -> AttributeError: 'Router' object has no attribute 'register_controllers'
+
+# 这样可以！
+# api.add_router("", "apps.api.api.router")
+
+
+# 定义一个全局响应处理器，修改响应为 200 的情况
+# 肯定可以做到，但是 django-ninja 不知道如何做。
+

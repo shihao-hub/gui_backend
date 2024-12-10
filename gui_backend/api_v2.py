@@ -4,9 +4,6 @@ from ninja import NinjaAPI
 from ninja.parser import Parser
 from ninja.security import HttpBearer
 
-from apps.ninja_exercise.api import router as exercise_router
-from apps.ninja_tool.api import router as tool_router
-
 
 class GlobalAuth(HttpBearer):
     def authenticate(self, request, token):
@@ -26,5 +23,5 @@ api = NinjaAPI(
     auth=[GlobalAuth()]
 )
 
-api.add_router("/exercise", exercise_router)
-api.add_router("/tool", tool_router)
+api.add_router("/exercise", "apps.ninja_exercise.api.router")
+api.add_router("/tool", "apps.ninja_tool.api.router")

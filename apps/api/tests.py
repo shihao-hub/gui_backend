@@ -1,7 +1,11 @@
 from django.test import TestCase
 
 from apps.api.schemas import ErrorSchema
-from apps.api.views import log
+from apps.core.shared.log import Log
+
+log = Log()
+
+from apps.api import testsets  # NOQA
 
 
 # (Q)!: django的 TestCase 如何运行时测试？直接就行吗？python manager.py test apps.api？ -> Yes

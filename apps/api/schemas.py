@@ -95,126 +95,126 @@ class BookFilterSchema(FilterSchema):
 # -------------------------------------------------------------------------------------------------------------------- #
 
 
-class SuccessSchema(Schema):
-    """
-    {
-        "success": True,
-        "message": "Books retrieved successfully.",
-        "data": [],
-        "meta": {
-            "requestId": "abc124",
-            "timestamp": "2023-10-01T12:35:00Z"
-        },
-        "errors": null,
-    }
-    """
-    success: bool = True
-    message: str = ""
-    data: Union[Dict, List, str, int, float, None] = None
-
-    meta: Optional[Dict] = None  # 可能的附加信息，如分页信息或其他元数据。 -> meta["timestamp"] = timezone.now()
-    errors: None = None
-
-
-class ErrorSchema(Schema):
-    """
-    {
-        "success": False,
-        "message": "The user with ID 1 was not found.",
-        "data": null,
-        "meta": {
-            "requestId": "abc126",
-            "timestamp": "2023-10-01T12:36:00Z"
-        },
-        "errors": [
-            {
-                "code": "USER_NOT_FOUND",
-                "message": "The user with ID 1 was not found.",
-                "details": {
-                    "requestedId": 1
-                }
-            }
-        ],
-    }
-    """
-    success: bool = False
-    message: str = ""
-    data: Union[Dict, List, str, int, float, None] = None
-
-    meta: Optional[Dict] = None  # 可能的附加信息，如分页信息或其他元数据。
-    errors: Optional[List[Dict]] = None  # 可能的错误信息，如验证错误等。
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# async_views.py
-# -------------------------------------------------------------------------------------------------------------------- #
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# chatgpt_views.py
-# -------------------------------------------------------------------------------------------------------------------- #
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# test_exercise.py
-# -------------------------------------------------------------------------------------------------------------------- #
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# index_views.py
-# -------------------------------------------------------------------------------------------------------------------- #
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# redis_views.py
-# -------------------------------------------------------------------------------------------------------------------- #
-class RedisTodoListItemSchema(Schema):
-    # TODO: Schema 准确的使用场景在哪？滥用会导致 Schema 类型过多啊...
-    value: str
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# tasks_views.py
-# -------------------------------------------------------------------------------------------------------------------- #
-class TasksTimedMessageRequestSchema(Schema):
-    class TypeEnum(enum.Enum):
-        QQ = enum.auto()
-        WECHAT = enum.auto()
-        QQ_EMAIL = enum.auto()
-
-    # TODO: 2024-12-08，为什么传入 Field 之后，api/docs 的 Schemas 里就有这个 Enum 了？这重名咋办？所以这不是最佳实践？
-    type: TypeEnum = Field(TypeEnum.QQ)
-
-
-# -------------------------------------------------------------------------------------------------------------------- #
-# tools_views.py
-# -------------------------------------------------------------------------------------------------------------------- #
-class ToolsBase64RequestSchema(Schema):
-    class ModeEnum(enum.Enum):
-        ENCODE = 0
-        DECODE = 1
-
-    class ResponseEncodingEnum(enum.Enum):
-        UTF8 = "utf-8"
-
-    mode: ModeEnum = Field(ModeEnum.ENCODE)
-    text: Optional[str] = None  # TODO: 为什么 None swagger-ui 会默认 "string"
-    file: Optional[UploadedFile] = None  # TODO: 为什么 UploadedFile swagger-ui 也会默认 "string" -> ! None 标记使它非必填
-    response_encoding: ResponseEncodingEnum = Field(ResponseEncodingEnum.UTF8)
-
-    def get_pending_text(self) -> str:
-        res = self.text
-        if res is None:
-            res = self.file.read().decode(self.response_encoding.value)
-        return res
-
-    @validator("text", always=True)  # TODO: 虽然被弃用的，但是还能用，暂且如此吧
-    def check_text_or_file(cls, text, values):
-        file = values.get("file")
-        if text is None and file is None:
-            raise ValueError("Either field 'text' or field 'file' must be provided, but not both can be None.")
-        return text
-
-
-class ToolsBase64ResponseSchema(Schema):
-    text: str
+# class SuccessSchema(Schema):
+#     """
+#     {
+#         "success": True,
+#         "message": "Books retrieved successfully.",
+#         "data": [],
+#         "meta": {
+#             "requestId": "abc124",
+#             "timestamp": "2023-10-01T12:35:00Z"
+#         },
+#         "errors": null,
+#     }
+#     """
+#     success: bool = True
+#     message: str = ""
+#     data: Union[Dict, List, str, int, float, None] = None
+#
+#     meta: Optional[Dict] = None  # 可能的附加信息，如分页信息或其他元数据。 -> meta["timestamp"] = timezone.now()
+#     errors: None = None
+#
+#
+# class ErrorSchema(Schema):
+#     """
+#     {
+#         "success": False,
+#         "message": "The user with ID 1 was not found.",
+#         "data": null,
+#         "meta": {
+#             "requestId": "abc126",
+#             "timestamp": "2023-10-01T12:36:00Z"
+#         },
+#         "errors": [
+#             {
+#                 "code": "USER_NOT_FOUND",
+#                 "message": "The user with ID 1 was not found.",
+#                 "details": {
+#                     "requestedId": 1
+#                 }
+#             }
+#         ],
+#     }
+#     """
+#     success: bool = False
+#     message: str = ""
+#     data: Union[Dict, List, str, int, float, None] = None
+#
+#     meta: Optional[Dict] = None  # 可能的附加信息，如分页信息或其他元数据。
+#     errors: Optional[List[Dict]] = None  # 可能的错误信息，如验证错误等。
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # async_views.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # chatgpt_views.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # test_exercise.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # index_views.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # redis_views.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+# class RedisTodoListItemSchema(Schema):
+#     # TODO: Schema 准确的使用场景在哪？滥用会导致 Schema 类型过多啊...
+#     value: str
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # tasks_views.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+# class TasksTimedMessageRequestSchema(Schema):
+#     class TypeEnum(enum.Enum):
+#         QQ = enum.auto()
+#         WECHAT = enum.auto()
+#         QQ_EMAIL = enum.auto()
+#
+#     # TODO: 2024-12-08，为什么传入 Field 之后，api/docs 的 Schemas 里就有这个 Enum 了？这重名咋办？所以这不是最佳实践？
+#     type: TypeEnum = Field(TypeEnum.QQ)
+#
+#
+# # -------------------------------------------------------------------------------------------------------------------- #
+# # tools_views.py
+# # -------------------------------------------------------------------------------------------------------------------- #
+# class ToolsBase64RequestSchema(Schema):
+#     class ModeEnum(enum.Enum):
+#         ENCODE = 0
+#         DECODE = 1
+#
+#     class ResponseEncodingEnum(enum.Enum):
+#         UTF8 = "utf-8"
+#
+#     mode: ModeEnum = Field(ModeEnum.ENCODE)
+#     text: Optional[str] = None  # TODO: 为什么 None swagger-ui 会默认 "string"
+#     file: Optional[UploadedFile] = None  # TODO: 为什么 UploadedFile swagger-ui 也会默认 "string" -> ! None 标记使它非必填
+#     response_encoding: ResponseEncodingEnum = Field(ResponseEncodingEnum.UTF8)
+#
+#     def get_pending_text(self) -> str:
+#         res = self.text
+#         if res is None:
+#             res = self.file.read().decode(self.response_encoding.value)
+#         return res
+#
+#     @validator("text", always=True)  # TODO: 虽然被弃用的，但是还能用，暂且如此吧
+#     def check_text_or_file(cls, text, values):
+#         file = values.get("file")
+#         if text is None and file is None:
+#             raise ValueError("Either field 'text' or field 'file' must be provided, but not both can be None.")
+#         return text
+#
+#
+# class ToolsBase64ResponseSchema(Schema):
+#     text: str

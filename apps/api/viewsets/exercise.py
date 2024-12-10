@@ -7,24 +7,18 @@ from asgiref.sync import sync_to_async
 from ninja import Router, Query, Schema, Field, ModelSchema
 from ninja.orm.factory import create_schema
 from ninja.pagination import paginate, LimitOffsetPagination, PageNumberPagination
-from ninja_crud import views, viewsets
 
 from django.http import HttpRequest, HttpResponse
 
 from apps.api.models import Book, User
-from apps.api.schemas import BookFilterSchema, SuccessSchema, ErrorSchema
-from apps.api.shared.singleton import Singleton
+from apps.api.schemas import BookFilterSchema
+from apps.api.schemasets import SuccessSchema, ErrorSchema
 from apps.api.shared.utils import generic_response, get_registered_router
 from apps.core.shared.log import Log
 
-api = Singleton.api
 log = Log()
 
 router = Router(tags=["exercise"])
-api.add_router("/exercise", router)
-
-book_router = Router()
-router.add_router("/book", book_router, tags=["exercise"])  # 多级路由/嵌套路由器
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -109,21 +103,6 @@ class Filters(Schema):
 @router.get("/filter")
 def events(request, filters: Query[Filters]):
     return {"filters": filters.dict()}
-
-
-class BookViewSet(viewsets.APIViewSet):
-    # ninja_crud
-    api = book_router
-    model = Book
-
-    default_request_body = create_schema(Book, name="BookRequestSchema", exclude=("id",))
-    default_response_body = create_schema(Book, name="BookResponseSchema")
-
-    list_departments = views.ListView()
-    create_department = views.CreateView()
-    read_department = views.ReadView()
-    update_department = views.UpdateView()
-    delete_department = views.DeleteView()
 
 
 @router.get("/books2/lists", response=generic_response)

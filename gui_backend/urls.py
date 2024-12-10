@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from apps.api.views import api
+from gui_backend.api import api
 from gui_backend.api_v2 import api as api_v2
 
 urlpatterns = [

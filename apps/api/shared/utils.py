@@ -3,7 +3,7 @@ from typing import List
 
 from ninja import NinjaAPI, Router
 
-from apps.api.schemas import SuccessSchema, ErrorSchema
+from apps.api.schemasets import SuccessSchema, ErrorSchema
 
 generic_response = {200: SuccessSchema, 400: ErrorSchema}
 

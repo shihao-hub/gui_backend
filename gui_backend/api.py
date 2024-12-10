@@ -1,3 +1,59 @@
+import traceback
+
+import orjson
+
+from django.http import HttpRequest
+from ninja.parser import Parser
+from ninja_extra import NinjaExtraAPI
+
+from apps.api.api import router
+from apps.api.exceptions import ServiceUnavailableError, BadRequestError
+from apps.api.schemasets import ErrorSchema
+from apps.core.shared.log import Log
+
+log = Log()
 
 
+class ORJSONParser(Parser):
+    def parse_body(self, request):
+        return orjson.loads(request.body)
 
+
+api = NinjaExtraAPI(parser=ORJSONParser())
+
+api.add_router("", router)
+
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# exceptions
+# -------------------------------------------------------------------------------------------------------------------- #
+@api.exception_handler(Exception)  # 设置 API 的全局响应类型，捕获所有未处理的异常
+def global_exception_handler(request: HttpRequest, exc: Exception):
+    log.error(f"{exc}\n{traceback.format_exc()}")
+    return api.create_response(
+        request,
+        ErrorSchema(message=str(exc)).dict(),
+        status=500
+    )
+
+
+@api.exception_handler(ServiceUnavailableError)
+def service_unavailable(request: HttpRequest, exc: ServiceUnavailableError):
+    return api.create_response(
+        request,
+        ErrorSchema(message=f"{exc.__class__}: {exc}").dict(),
+        status=503
+    )
+
+
+@api.exception_handler(BadRequestError)
+def bad_request(request: HttpRequest, exc: BadRequestError):
+    # TODO: 此处要打印的信息可以优化
+    return api.create_response(
+        request,
+        ErrorSchema(**dict(
+            message=f"{exc.__class__}: {exc}",
+            data=exc.data
+        )).dict(),
+        status=400
+    )

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from apps.api.schemas import ErrorSchema
+from apps.api.schemasets import ErrorSchema
 from apps.core.shared.log import Log
 
 log = Log()

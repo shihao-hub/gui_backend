@@ -1,16 +1,16 @@
-__all__ = ["api"]
+# __all__ = ["api"]
 
 # views.py 文件目前可以视其为 django 的入口文件，虽然其实主要是在 urls.py 导入了，所以算入口文件。其他文件也行的吧！
 
-from apps.api.shared.singleton import Singleton
+# from apps.api.shared.singleton import Singleton
 
-api = Singleton.api
+# api = Singleton.api
 
 # 将所有代码引入进来 (Q)!: 为什么不会出现循环引用的情况？A: 模块以延迟加载的方式导入（但是，出现循环引用显然代码结构有问题啊...)
-from apps.api import exceptionsets  # NOQA
+# from apps.api import exceptionsets  # NOQA
 
 # 有没有更好的办法？
-from apps.api import viewsets  # NOQA
+# from apps.api import viewsets  # NOQA
 
 # 2024-12-10：约定，形如 ...sets 的目录都是需要被全部导入的目录
 

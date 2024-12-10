@@ -4,22 +4,20 @@ from django.http import HttpRequest, HttpResponse
 from ninja import Router
 
 from apps.api.exceptions import BadRequestError
-from apps.api.schemas import TasksTimedMessageRequestSchema, SuccessSchema
+from apps.api.schemasets import SuccessSchema
+from apps.api.schemasets.task import TimedMessageRequest
 from apps.api.viewsets.widgets import timed_message
-from apps.api.shared.singleton import Singleton
 from apps.api.shared.utils import generic_response, get_registered_router
 from apps.core.shared.log import Log
 
-api = Singleton.api
 log = Log()
 
 router = Router(tags=["task"])
-api.add_router("/task", router)
 
 
 # 为什么必须设置 200 和 其他？200 为什么没有默认值？那这样的话我不如封装一个 response 函数呢...
 @router.post("/timed_message", response=generic_response, summary="定时发送信息")
-def timed_message(request: HttpRequest, data: TasksTimedMessageRequestSchema):
+def timed_message(request: HttpRequest, data: TimedMessageRequest):
     """
         **定时发送信息**
         - QQ

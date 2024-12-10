@@ -7,4 +7,5 @@ from apps.core.shared.log import Log
 api = Singleton.api
 log = Log()
 
-router = get_registered_router(api, __file__)
+router = Router(tags=["chatgpt"])
+api.add_router("/chatgpt", router)

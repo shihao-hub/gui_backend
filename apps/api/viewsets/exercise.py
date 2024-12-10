@@ -20,10 +20,11 @@ from apps.core.shared.log import Log
 api = Singleton.api
 log = Log()
 
-router = get_registered_router(api, __file__)
+router = Router(tags=["exercise"])
+api.add_router("/exercise", router)
 
 book_router = Router()
-router.add_router("/book", book_router, tags=router.tags)  # 多级路由/嵌套路由器
+router.add_router("/book", book_router, tags=["exercise"])  # 多级路由/嵌套路由器
 
 
 # -------------------------------------------------------------------------------------------------------------------- #

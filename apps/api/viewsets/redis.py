@@ -1,8 +1,9 @@
 import json
 
 import redis
-from django.http import HttpRequest
 
+from django.http import HttpRequest
+from ninja import Router
 from ninja_extra import api_controller, http_get, http_post, http_put, http_delete
 
 from apps.api.exceptions import BadRequestError
@@ -14,7 +15,8 @@ from apps.core.shared.log import Log
 api = Singleton.api
 log = Log()
 
-router = get_registered_router(api, __file__)
+router = Router(tags=["redis"])
+api.add_router("/redis", router)
 
 db = redis.StrictRedis(host="localhost", port=6379, db=0)
 

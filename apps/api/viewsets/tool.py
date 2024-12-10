@@ -24,7 +24,8 @@ from apps.core.shared.log import Log
 api = Singleton.api
 log = Log()
 
-router = get_registered_router(api, __file__)
+router = Router(tags=["tool"])
+api.add_router("/tool", router)
 
 
 @router.post("/format_markdown", response=generic_response, summary="格式化 markdown 文件")

@@ -13,7 +13,8 @@ from apps.core.shared.log import Log
 api = Singleton.api
 log = Log()
 
-router = get_registered_router(api, __file__)
+router = Router(tags=["task"])
+api.add_router("/task", router)
 
 
 # 为什么必须设置 200 和 其他？200 为什么没有默认值？那这样的话我不如封装一个 response 函数呢...

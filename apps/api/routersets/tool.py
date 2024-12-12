@@ -7,9 +7,9 @@ import sqlite3
 import traceback
 import uuid
 import zipfile
-from io import BytesIO
+from io import BytesIO, IOBase
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, BinaryIO
 
 import chardet
 import pangu
@@ -40,14 +40,6 @@ router = Router(tags=["tool"])
 
 @api_controller("/tool/comment_collector", tags=router.tags)
 class CommentCollectorController:
-    def _collect_comments_by_pattern(self, pattern: re.Pattern, content: str) -> List[str]:
-        this = self
-
-        res = []
-        matches = pattern.findall(content)
-        for match in matches:
-            res.append(match.strip())  # 清除空白符
-        return res
 
     @staticmethod
     def decorator_collect_comment_notes_exception_handler(func):
@@ -61,26 +53,41 @@ class CommentCollectorController:
 
         return wrapper
 
-    @http_post("/collect_comments", response=generic_response, summary="筛选文件中符合条件的注释")
-    @decorate_view(decorator_collect_comment_notes_exception_handler)
-    @knowledge("zipfile 解压缩到临时文件并 finally 删除目录", "BytesIO 等价于内存文件", "os.walk 迭代遍历整个文件目录")
-    def collect_comments(self,
-                         request: HttpRequest,
-                         # mode: Literal["Q", "N"] = Form(...), # form_data
-                         mode: Literal["Question", "Note"],  # query_parameters/path_parameters
-                         # files: List[UploadedFile] = File(...)): -> ninja 0.x.x 版本
-                         files: File[List[UploadedFile]]):
-        def is_zip_file(name) -> bool:
+    class CollectCommentsFObj:
+        @staticmethod
+        def is_text_file(file: BinaryIO) -> bool:
+            # 判断一个文件是文本文件 -> 2024-12-12-23:52：随便找个压缩包测出来的 bug
+            rawdata = file.read(10000)  # 读取一部分数据进行检测
+            file.seek(0)
+            result = chardet.detect(rawdata)
+            # 如果检测结果的置信度大于某个阈值，且推测的编码不是常见的二进制编码，则可能是文本文件
+            return result.get("confidence", 0) > 0.9 and result.get("encoding") is not None
+
+        @staticmethod
+        def is_zip_file(name: str) -> bool:
             # 如果文件是压缩包，暂定 .zip
             return name.endswith(".zip")
 
-        def get_comments(file):
+        def __init__(self, mode: Literal["Question", "Note"], files: List[UploadedFile]):
+            self.mode = mode
+            self.files = files
+
+        def _collect_comments_by_pattern(self, pattern: re.Pattern, content: str) -> List[str]:
+            this = self
+
+            res = []
+            matches = pattern.findall(content)
+            for match in matches:
+                res.append(match.strip())  # 清除空白符
+            return res
+
+        def get_comments(self, file: BytesIO):
             content: bytes = file.read()
             # log.info(f"{_file} -> {content}")
-            content_str = content.decode("utf-8")
-            return self._collect_comments_by_pattern(re.compile(rf"\({mode[0]}\)!:\s*(.*)"), content_str)
+            content_str = content.decode(chardet.detect(content).get("encoding"))
+            return self._collect_comments_by_pattern(re.compile(rf"\({self.mode[0]}\)!:\s*(.*)"), content_str)
 
-        def handle_zip_file(file: UploadedFile) -> dict:
+        def handle_zip_file(self, file: UploadedFile) -> dict:
             res = {}
 
             zip_target_path = settings.BASE_DIR / "temporary" / str(uuid.uuid4())
@@ -91,33 +98,53 @@ class CommentCollectorController:
                     # 文件解压缩后，遍历读取每个文件，重复操作
                     for dir_path, sub_dirs, filenames in os.walk(zip_target_path):
                         for name in filenames:
+                            # 注意，此处显然可以优化，这个文件可以分装成二进制读写
                             with open(os.path.join(dir_path, name), "rb") as f:
+                                if not self.is_text_file(f):
+                                    continue
                                 key = os.path.join(dir_path, name).replace(str(zip_target_path), "")
                                 # TODO: 压缩包重名了怎么办？这显然有问题（测试的重要性...程序的健壮性显然需要）
                                 res.setdefault(key, [])
-                                res[key] += get_comments(BytesIO(f.read()))
+                                res[key] += self.get_comments(BytesIO(f.read()))
             finally:
                 if zip_target_path.is_dir():
                     shutil.rmtree(zip_target_path)
 
             return res
 
-        # file 只能被消耗一次。此处如果启用的话，file 被消耗后再使用就是 b'' 空文件！
-        # fs = FileSystemStorage(location=str(settings.BASE_DIR / "temporary"))  # django 的文件系统
-        # filename = fs.save(file.name, file)
-        # file_url = fs.url(filename)  # 文件路径
-        # log.info(file_url)
+        def run(self):
+            # file 只能被消耗一次。此处如果启用的话，file 被消耗后再使用就是 b'' 空文件！
+            # fs = FileSystemStorage(location=str(settings.BASE_DIR / "temporary"))  # django 的文件系统
+            # filename = fs.save(file.name, file)
+            # file_url = fs.url(filename)  # 文件路径
+            # log.info(file_url)
 
-        res = {}
-        for file in files:
-            if is_zip_file(file.name):
-                res.update(handle_zip_file(file))
-                continue
+            # file 需要增加校验，必须是文本文件
 
-            res.setdefault(file.name, [])
-            res[file.name] += get_comments(file)
+            res = {}
+            for file in self.files:
+                if self.is_zip_file(file.name):
+                    res.update(self.handle_zip_file(file))
+                    continue
+                bytes_io = BytesIO(file.read())
+                if not self.is_text_file(bytes_io):
+                    continue
+                res.setdefault(file.name, [])
+                res[file.name] += self.get_comments(bytes_io)
 
-        return {"data": res}
+            return {"data": res}
+
+    @http_post("/collect_comments", response=generic_response, summary="筛选文件中符合条件的注释")
+    @decorate_view(decorator_collect_comment_notes_exception_handler)
+    @knowledge("zipfile 解压缩到临时文件并 finally 删除目录", "BytesIO 等价于内存文件", "os.walk 迭代遍历整个文件目录")
+    def collect_comments(self,
+                         request: HttpRequest,
+                         # mode: Literal["Q", "N"] = Form(...), # form_data
+                         mode: Literal["Question", "Note"],  # query_parameters/path_parameters
+                         # files: List[UploadedFile] = File(...)): -> ninja 0.x.x 版本
+                         files: File[List[UploadedFile]]):
+
+        return self.CollectCommentsFObj(mode, files).run()
 
 
 # 注意，一个文件中的函数请勿重名

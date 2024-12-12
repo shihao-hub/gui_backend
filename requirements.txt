@@ -5,6 +5,8 @@ django-ninja-crud
 django-ninja-extra
 
 redis
+rq # windows 环境不支持（os.fork() 不存在，python 不是跨平台吗？），那 django-rq 是不是也不支持？
+rq-dashboard
 mongo
 mongoengine
 

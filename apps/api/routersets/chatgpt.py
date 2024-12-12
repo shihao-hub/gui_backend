@@ -7,12 +7,14 @@ from ninja import Router, Form
 
 from apps.api.shared.utils import generic_response, get_registered_router
 from apps.core.shared.log import Log
+from apps.core.shared.utils import knowledge
 
 log = Log()
 
 router = Router(tags=["chatgpt"])
 
 
+@knowledge("EventStream", "requests.post")
 def get_ai_event_steam_response(message: List[Dict]):
     url = "https://aliyun.zaiwen.top/admin/chatbot"
     data = {

@@ -5,6 +5,10 @@ from ninja import Schema, Field, UploadedFile
 from pydantic import validator, field_validator, root_validator
 
 
+class FormatMarkDownRequestQuery(Schema):
+    grave_accent: Optional[bool] = None
+
+
 class FormatMarkDownResp(Schema):
     # TODO: 不止能不能这样
     file: UploadedFile

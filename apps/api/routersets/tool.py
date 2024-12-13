@@ -98,7 +98,7 @@ class CommentCollectorController:
                     # 文件解压缩后，遍历读取每个文件，重复操作
                     for dir_path, sub_dirs, filenames in os.walk(zip_target_path):
                         for name in filenames:
-                            # 注意，此处显然可以优化，这个文件可以分装成二进制读写
+                            # 注意，此处显然可以优化，这个文件可以封装成二进制读写
                             with open(os.path.join(dir_path, name), "rb") as f:
                                 if not self.is_text_file(f):
                                     continue
@@ -113,6 +113,7 @@ class CommentCollectorController:
             return res
 
         def run(self):
+
             # file 只能被消耗一次。此处如果启用的话，file 被消耗后再使用就是 b'' 空文件！
             # fs = FileSystemStorage(location=str(settings.BASE_DIR / "temporary"))  # django 的文件系统
             # filename = fs.save(file.name, file)

@@ -49,7 +49,7 @@ def save_knowledge(key, knowledge_list):
 
 
 def knowledge(*knowledge_list: *Tuple[str, ...]):
-    # TODO: 目前只是充当注释，后续此处可以统计一个知识库。
+    # TODO: 目前只是充当注释，后续此处可以统计一个知识库。（比如，存储整个函数的源代码）
     #   **func_name - func_no - func_location**
     #   - knowledge1
     #   - knowledge2

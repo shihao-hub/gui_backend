@@ -44,10 +44,15 @@ INSTALLED_APPS = [
     "ninja_crud",
     "ninja_extra",
 
+    "corsheaders",
+
+    "apps.index",
     "apps.api",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # 放在其他中间件之前，尤其是在 CommonMiddleware 之前
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,12 +62,38 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# -------------------------------------------------------------------------------------------------------------------- #
+# FIXME: 2024-12-15：前后端分离跨域问题的解决办法（gpt 生成，原理我不知道）
+
+# 允许所有来源
+CORS_ALLOW_ALL_ORIGINS = True  # or use CORS_ALLOWED_ORIGINS
+
+# 只允许特定来源
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000", # 开发环境
+#     "https://yourfrontend.com", # 生产环境
+# ]
+
+# 允许特定 HTTP 方法
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS"
+]
+
+# 允许携带认证信息（如 Cookie）
+CORS_ALLOW_CREDENTIALS = True
+# -------------------------------------------------------------------------------------------------------------------- #
+
+
 ROOT_URLCONF = 'gui_backend.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

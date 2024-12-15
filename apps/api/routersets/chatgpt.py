@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 import requests
+from pydantic import HttpUrl
 
 from django.http import HttpRequest, StreamingHttpResponse
 from ninja import Router, Form
@@ -19,8 +20,8 @@ router = Router(tags=["chatgpt"])
 #       python 程序，argparse 库，while 循环等待用户输入，一个消息列表存储所有问答记住上下文来调用 ai 接口。
 #       注意，argparse 似乎有更好的替代品。pyinstaller 似乎不太好用？
 
-@knowledge("EventStream", "requests.post","proxies=proxies, verify=False")
-def get_ai_event_steam_response(message: List[Dict]):
+@knowledge("EventStream", "requests.post", "proxies=proxies, verify=False")
+def _get_ai_event_steam_response(message: List[Dict]):
     url = "https://aliyun.zaiwen.top/admin/chatbot"
     data = {
         "message": message,
@@ -39,7 +40,8 @@ def get_ai_event_steam_response(message: List[Dict]):
 
         try:
             # TODO: 如何不设置 verify=False 而是使用证书认证访问 https 呢？
-            with requests.post(url, json=data, stream=True, timeout=15, proxies=proxies, verify=False) as response:
+            # 2024-12-14：这个 event_stream 要求 timeout 似乎需要设置大一点？
+            with requests.post(url, json=data, stream=True, timeout=300, proxies=proxies, verify=False) as response:
                 for line in response.iter_lines():
                     if line:
                         yield line.decode("utf-8") + "\n"
@@ -56,18 +58,32 @@ def get_ai_event_steam_response(message: List[Dict]):
 
 
 @router.post("/ask_ai_one_question", summary="问 ai 一个问题")
-def ask_ai_one_question(request: HttpRequest, prompt: str = Form(max_length=100)):
+def ask_ai_one_question(request: HttpRequest, prompt: str = Form(max_length=1000)):
     message = [
         {
             "role": "user",
             "content": prompt,
         }
     ]
-    return get_ai_event_steam_response(message)
+    return _get_ai_event_steam_response(message)
+
+
+@router.post("/summarize_text", summary="ai 总结")
+def summarize_text(request: HttpRequest, prompt: Form[str]):
+    # TODO: 找到更优的 prompt
+    #   题外话，这个可以帮我直接总结一篇英文文章，这样可以先看他的总结然后看英文，岂不是更方便？
+    #   就像阅读代码一样，以后让 ai 帮我们生成注释（之前刷到的幽灵注释比较好...为什么 idea 不支持？）
+    message = [
+        {
+            "role": "user",
+            "content": "请帮我将下面的内容总结一下\n\n" + prompt,
+        }
+    ]
+    return _get_ai_event_steam_response(message)
 
 
 @router.post("/ask_english_ai", summary="问 英语学习 ai")
-def ask_english_ai(request: HttpRequest, prompt: str = Form(max_length=100)):
+def ask_english_ai(request: HttpRequest, prompt: str = Form(max_length=1000)):
     init_prompt = """
     在接下来的对话中，你要帮助我学习英语。因为我的英语水平有限，所以拼写可能会不准确，如果语句不通顺，请猜测我要表达的意思。在之后的对话中，除了正常理解并回复我的问题以外，还要指出我说的英文中的语法错误和拼写错误。
     并且在以后的对话中都要按照以下格式回复:
@@ -97,7 +113,7 @@ def ask_english_ai(request: HttpRequest, prompt: str = Form(max_length=100)):
     try:
         log.info(f"123")
 
-        return get_ai_event_steam_response(message)
+        return _get_ai_event_steam_response(message)
     except Exception as e:
         log.error(f"ask_english_ai error: {e}", print_stack=True)
 
@@ -115,4 +131,25 @@ def ask_function_naming_ai(request: HttpRequest, prompt: str = Form(max_length=1
             "content": prompt,
         }
     ]
-    return get_ai_event_steam_response(message)
+    return _get_ai_event_steam_response(message)
+
+
+@router.post("/summarize_url_content", response=generic_response, summary="ai 总结网址信息")
+def summarize_url_content(request: HttpRequest, url: Form[HttpUrl]):
+    # TODO: 很多网站都需要登录怎么解决？
+    #   有些网站没关系：https://www.ruanyifeng.com/blog、https://www.codedump.info 等
+    #       国外好多网站不需要登录！
+    # TODO: 将 get 到的 html 中文文本抽出来
+    #   2024-12-14-173427.md
+    #   涉及爬虫技术 -> requests, lxml, Beautiful Soup, Scrapy, Selenium, Pandas, Puppeteer, Requests-HTML,
+    response = requests.get(url, verify=False)
+    content = response.content.decode("utf-8")
+    log.info(content)
+    message = [
+        {
+            "role": "user",
+            # TODO: 找到更优的 prompt
+            "content": "请帮我将下面的文章内容总结一下\n\n" + content,
+        }
+    ]
+    return _get_ai_event_steam_response(message)

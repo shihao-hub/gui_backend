@@ -13,6 +13,7 @@ from typing import List, Literal, Optional, BinaryIO
 
 import chardet
 import pangu
+import speech_recognition as sr
 
 from django.conf import settings
 from django.core.cache import cache
@@ -26,7 +27,7 @@ from ninja.decorators import decorate_view
 from ninja_extra import api_controller, http_post, http_get, http_put, http_delete, http_patch
 
 from apps.api import settings as app_settings
-from apps.api.exceptions import BadRequestError
+from apps.api.exceptions import BadRequestError, ServiceUnavailableError
 from apps.api.schemasets import SuccessSchema
 from apps.api.schemasets.tool import Base64Request, Base64Response, FormatMarkDownRequestQuery
 from apps.api.shared.utils import generic_response
@@ -267,3 +268,27 @@ def get_gitignore_file(request: HttpRequest, name: str):
         response.write(file.read().encode("utf-8"))
         response["Content-Disposition"] = f"attachment; filename={file_path.name}"
     return response
+
+
+@router.post("/convert_audio_to_text", response=generic_response, summary="转换音频为文本")
+def convert_audio_to_text(request: HttpRequest, audio: File[UploadedFile]):
+    text = None
+
+    # 创建语音识别的识别器实例
+    recognizer = sr.Recognizer()
+
+    # 打开 WAV 文件
+    with sr.AudioFile(audio) as source:
+        audio_data = recognizer.record(source)  # 读取音频文件
+
+    # 使用Google Web服务进行识别
+    try:
+        text = recognizer.recognize_google(audio_data, language='zh-CN')  # 中文识别
+    except sr.UnknownValueError as e:
+        log.error(f"{e}")
+        raise ServiceUnavailableError("未能理解音频")
+    except sr.RequestError as e:
+        log.error(f"{e}")
+        raise ServiceUnavailableError("无法请求结果")
+
+    return {"data": text}

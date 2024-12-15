@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快记笔记</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f6fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        #addForm {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        #newTodo {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #newTodo:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #2980b9;
+        }
+
+        .btn-edit {
+            background: #f1c40f;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #f39c12;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .todo-container {
+            background: white;
+            border-radius: 8px;
+        }
+
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+            transition: all 0.3s;
+        }
+
+        .todo-item:hover {
+            background: #f8f9fa;
+        }
+
+        .todo-text {
+            flex: 1;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #95a5a6;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            #addForm {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>快记笔记</h1>
+
+        <form id="addForm">
+            <input type="text" id="newTodo" placeholder="输入新的简短笔记" required>
+            <button type="submit" class="btn btn-add">添加</button>
+        </form>
+
+        <div class="todo-container" id="todoList"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8888';
+        let todos = [];
+
+
+        async function fetchTodos() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/redis/quicknote`);
+                if (!response.ok) throw new Error('获取笔记失败');
+                const resp_data = await response.json();
+                todos = resp_data.data;
+                renderTodos();
+            } catch (error) {
+                console.error('获取笔记失败:', error);
+                alert('获取笔记失败，请稍后重试');
+            }
+        }
+
+        // 渲染待办事项列表
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            todoList.innerHTML = '';
+
+            if (todos.length === 0) {
+                todoList.innerHTML = '<div class="empty-state">暂无笔记</div>';
+                return;
+            }
+
+            todos.forEach((todo, index) => {
+                const div = document.createElement('div');
+                div.className = 'todo-item';
+                div.innerHTML = `
+                    <span class="todo-text ${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${index})">${todo}</span>
+                    <div class="todo-actions">
+                        <button class="btn btn-edit" onclick="editTodo(${index})">编辑</button>
+                        <button class="btn btn-delete" onclick="deleteTodo(${index})">删除</button>
+                    </div>
+                `;
+                todoList.appendChild(div);
+            });
+        }
+
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('newTodo');
+            const value = input.value.trim();
+
+            if (value) {
+                try {
+                    const formData = new FormData();
+                    formData.append('value', value);
+
+                    const response = await fetch(`${API_BASE_URL}/api/redis/quicknote`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error('添加笔记失败');
+
+                    input.value = '';
+                    await fetchTodos(); // 重新获取列表
+                } catch (error) {
+                    console.error('添加笔记失败:', error);
+                    alert('添加笔记失败，请稍后重试');
+                }
+            }
+        });
+
+        // 删除笔记
+        async function deleteTodo(index) {
+            if (confirm('确定要删除这个笔记吗？')) {
+                try {
+                    const formData = new FormData();
+                    formData.append('index', index);
+
+                    const response = await fetch(`${API_BASE_URL}/api/redis/quicknote/delete?index=${index}`, {
+                        method: 'DELETE',
+                        // body: formData // 此处后端不是表单，是查询参数
+                    });
+
+                    if (!response.ok) throw new Error('删除笔记失败');
+
+                    await fetchTodos(); // 重新获取列表
+                } catch (error) {
+                    console.error('删除笔记失败:', error);
+                    alert('删除笔记失败，请稍后重试');
+                }
+            }
+        }
+
+        // 编辑笔记
+        async function editTodo(index) {
+            // 先获取指定笔记
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/redis/quicknote/${index}`);
+                if (!response.ok) throw new Error('获取笔记详情失败');
+                const resp_data = await response.json();
+                const todoItem = resp_data.data;
+
+                const newText = prompt('编辑笔记:', todoItem);
+                if (newText !== null && newText.trim() !== '') {
+                    const formData = new FormData();
+                    formData.append('content', newText.trim());
+
+                    const updateResponse = await fetch(`${API_BASE_URL}/api/redis/quicknote/${index}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!updateResponse.ok) throw new Error('更新笔记失败');
+
+                    await fetchTodos(); // 重新获取列表
+                }
+            } catch (error) {
+                console.error('编辑笔记失败:', error);
+                alert('编辑笔记失败，请稍后重试');
+            }
+        }
+
+        // 切换完成状态（如果后端API支持的话）
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            renderTodos();
+        }
+
+        // 初始加载
+        fetchTodos();
+    </script>
+</body>
+
+</html>

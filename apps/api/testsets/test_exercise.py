@@ -1,12 +1,12 @@
-__all__ = ["HelloTest"]
+__all__ = ["Test"]
 
 from django.test import TestCase
 from ninja.testing import TestClient
 
-from apps.api.viewsets.exercise import router
+from apps.api.routersets.exercise import router
 
 
-class HelloTest(TestCase):
+class Tester(TestCase):
     def test_startup(self):
         client = TestClient(router)
 

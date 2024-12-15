@@ -1,12 +1,31 @@
 import functools
 from concurrent.futures import ThreadPoolExecutor
-from typing import Tuple
+from typing import TypeVar, Generic, Tuple
 
 from apps.api.settings import redis_db as db
 from apps.api.settings import rq_queue
 from apps.core.shared.log import Log
 
+T = TypeVar("T")
 log = Log()
+
+
+class OutputParameter(Generic[T]):
+    """ 输出参数类，当然，这是违背《重构》这本书的理念的，该书不建议使用输出参数 """
+
+    def __init__(self, value: T = None):
+        # init 的参数 value: T 不会让代码分析工具误解吗？但是 Optional[T] 也会误解吧？
+        # 目前来说，没发现什么问题，确实方便了许多，之后再看吧！
+        self._value: T = value
+
+    def set_value(self, value: T):
+        self._value = value
+
+    def get_value(self) -> T:
+        return self._value
+
+    def __str__(self):
+        return str(self._value)
 
 
 # with ThreadPoolExecutor(max_workers=1) as pool:

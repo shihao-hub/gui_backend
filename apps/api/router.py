@@ -12,7 +12,7 @@ from ninja_extra import NinjaExtraAPI
 
 from apps.api.exceptions import ServiceUnavailableError, BadRequestError
 from apps.api.routersets.tool import CommentCollectorController
-from apps.api.routersets.redis import TodoListController
+from apps.api.routersets.redis import TodoListController, QuickNoteController
 from apps.api.schemasets import ErrorSchema
 from apps.core.shared.log import Log
 
@@ -33,9 +33,12 @@ api.add_router("/redis", "apps.api.routersets.redis.router")
 api.add_router("/task", "apps.api.routersets.task.router")
 api.add_router("/tool", "apps.api.routersets.tool.router")
 
+# TODO: ninja_extra 的如何测试？【必须看一下源码】，找到它的 router 比较重要...
+#   题外话，【如何阅读源码呢？】不画图真的很难（因为跳来跳去），但是画什么图呢？类图？【是不是又得学 UML？】
 api.register_controllers(
     CommentCollectorController,
-    TodoListController
+    TodoListController,
+    QuickNoteController
 )
 
 

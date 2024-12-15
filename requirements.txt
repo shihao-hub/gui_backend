@@ -4,11 +4,16 @@ django-ninja
 django-ninja-crud
 django-ninja-extra
 
+django-cors-headers # 专门用于处理 CORS 的库，确保前端能顺利与 Django REST API 通信
+
 redis
 rq # windows 环境不支持（os.fork() 不存在，python 不是跨平台吗？），那 django-rq 是不是也不支持？
 rq-dashboard
 mongo
 mongoengine
+
+SpeechRecognition
+pydub
 
 requests
 aiohttp

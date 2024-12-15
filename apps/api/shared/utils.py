@@ -1,4 +1,5 @@
 import os
+import warnings
 from typing import List
 
 from ninja import NinjaAPI, Router
@@ -16,6 +17,10 @@ generic_response = {200: SuccessSchema, 400: ErrorSchema}
 
 
 def get_registered_router(api: NinjaAPI, file: str, extra_tags: List = None) -> Router:
+    warnings.warn(
+        "deprecated_function is deprecated and will be removed in a future version.",
+        DeprecationWarning,
+    )
     # 2024-12-10：这个不太好，隐藏了许多东西。直接手写并没有太麻烦！如非必要，勿增实体！
     main_tag = os.path.splitext(os.path.basename(file))[0]
     extra_tags = extra_tags if extra_tags else []

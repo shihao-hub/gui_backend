@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "django-ninja-api",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

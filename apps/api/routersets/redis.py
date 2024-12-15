@@ -1,3 +1,4 @@
+import functools
 import re
 from typing import List
 
@@ -75,7 +76,10 @@ class QuickNoteController:
     def list_todo(self):
 
         items: List[bytes] = db.lrange(self.REDIS_KEY, 0, -1)
-        return {"data": [re.sub(r"^.*\\|", "", e.decode("utf-8"), 1) for e in items]}
+        data: List[str] = [e.decode("utf-8") for e in items]
+        # cmp = functools.cmp_to_key(lambda x, y: len(x) - len(y))
+        # data.sort(key=cmp)
+        return {"data": data}
 
     @http_post("", response=generic_response)
     def create_todo(self, request: HttpRequest, value: Form[str]):
@@ -101,6 +105,7 @@ class QuickNoteController:
         self._check_index(index)
         data = db.lrange(self.REDIS_KEY, index, index)
         return {"data": data[0].decode("utf-8")}
+
 
 # TODO: ninja_extra 注册的时候，似乎都是同一个函数。所以这代码似乎无法复用...
 #   原理是啥？

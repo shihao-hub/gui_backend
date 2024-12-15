@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 import requests
+import bs4
 from pydantic import HttpUrl
 
 from django.http import HttpRequest, StreamingHttpResponse
@@ -14,6 +15,8 @@ log = Log()
 
 router = Router(tags=["chatgpt"])
 
+
+# TODO: chatgpt 摆在面前有个显而易见的难点，网络问题！...
 
 # TODO: 如何实现命令行 + EventStream？浏览器太卡了。
 #   简单设想：
@@ -76,7 +79,7 @@ def summarize_text(request: HttpRequest, prompt: Form[str]):
     message = [
         {
             "role": "user",
-            "content": "请帮我将下面的内容总结一下\n\n" + prompt,
+            "content": "请帮我将下面的内容用中文总结一下\n\n" + prompt,
         }
     ]
     return _get_ai_event_steam_response(message)
@@ -135,7 +138,20 @@ def ask_function_naming_ai(request: HttpRequest, prompt: str = Form(max_length=1
 
 
 @router.post("/summarize_url_content", response=generic_response, summary="ai 总结网址信息")
-def summarize_url_content(request: HttpRequest, url: Form[HttpUrl]):
+def summarize_url_content(request: HttpRequest, url: Form[HttpUrl], ask_ai_directly: bool = False):
+    if ask_ai_directly:
+        message = [
+            {
+                "role": "user",
+                # FIXME:
+                #   抱歉，我无法直接访问外部链接或浏览网络内容。但是，我可以帮助你总结相关主题或内容。
+                #   如果你能提供网页上的一些文本或主要信息，我会很乐意帮助你翻译和总结。
+                # TODO: 突然意识到一个问题，我上次写的收集 N Q 的那个功能，用 todo 的正则表达式规则不就行了？-> `\btodo\b.*`
+                "content": "请访问下面这个 url，然后将其中的内容用中文总结一下\n\n" + str(url),
+            }
+        ]
+        return _get_ai_event_steam_response(message)
+
     # TODO: 很多网站都需要登录怎么解决？
     #   有些网站没关系：https://www.ruanyifeng.com/blog、https://www.codedump.info 等
     #       国外好多网站不需要登录！
@@ -143,13 +159,20 @@ def summarize_url_content(request: HttpRequest, url: Form[HttpUrl]):
     #   2024-12-14-173427.md
     #   涉及爬虫技术 -> requests, lxml, Beautiful Soup, Scrapy, Selenium, Pandas, Puppeteer, Requests-HTML,
     response = requests.get(url, verify=False)
-    content = response.content.decode("utf-8")
+    html_content = response.content.decode("utf-8")
+
+    def get_text_of_html():
+        soup = bs4.BeautifulSoup(html_content, 'html.parser')
+        return soup.get_text(strip=False)  # strip=True 会去除空白符
+
+    content = get_text_of_html()
+
     log.info(content)
     message = [
         {
             "role": "user",
             # TODO: 找到更优的 prompt
-            "content": "请帮我将下面的文章内容总结一下\n\n" + content,
+            "content": "请帮我将下面的文章内容用中文总结一下\n\n" + content,
         }
     ]
     return _get_ai_event_steam_response(message)

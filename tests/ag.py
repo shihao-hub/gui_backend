@@ -279,6 +279,13 @@ def main():
         #       又或者，假如问答的末尾有 @cmd 呢？又比如类似 cursor、codegeex 一样，开头有 @image 呢？
         #       又或者，@question 后的内容才是你的提问呢？
         #       退而求其次，以 @[a-zA-Z_] 为分隔符（假如问题里面存在 @xxx 就惨了...），拆出所有命令序列（此处好像需要正则表达式的力量？）
+        #           gcc
+        #               -c
+        #               -o ./xxx/x.c
+        #               -march=i386
+        #               -fno-pic
+        #               -DAR_H="arch/x.h"
+        #               -fcf-protection=none
         #       TODO: 解决问题里面存在 @xxx 的问题，还是说直接不识别？需要你转移？\@ 才是 @？ -> 问问 gpt
 
         # 退而求其次，遇到空行就执行，这导致需要按两次回车...

@@ -266,6 +266,10 @@ def main():
         lines = []
         while True:
             line = input()
+            # 2024-16-00:30：优化，每次提问前面的空行都忽略（使用的时候发现的，由此可见，测试的重要性）
+            if line == "" and not lines:
+                continue
+
             # print(ord('\r'), ord('\n')) # 13 10
             # print([ord(e) for e in line]) # 会忽略 \r \n，即获取不到
             if line == "":

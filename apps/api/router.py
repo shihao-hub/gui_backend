@@ -29,6 +29,7 @@ api = NinjaExtraAPI(parser=ORJSONParser(), docs_decorator=None)  # staff_member_
 api.add_router("/chatgpt", "apps.api.routersets.chatgpt.router")
 api.add_router("/exercise", "apps.api.routersets.exercise.router")
 api.add_router("/model", "apps.api.routersets.model.router")
+api.add_router("/ocr", "apps.api.routersets.ocr.router")
 api.add_router("/redis", "apps.api.routersets.redis.router")
 api.add_router("/task", "apps.api.routersets.task.router")
 api.add_router("/tool", "apps.api.routersets.tool.router")

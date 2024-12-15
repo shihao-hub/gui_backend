@@ -249,6 +249,9 @@ def main():
     command_controller = CommandController(messages)
 
     while True:
+        # flag:
+        upload_image = False
+
         # 为什么老旧电脑要配一个 RESET 按钮？
 
         # pycharm run 无法终止输入...
@@ -263,6 +266,14 @@ def main():
         # prompt = input()
 
         # TODO: 我的剪切板复制了一张图片，我如何在命令行按 ctrl+v 的时候将其上传？
+        #   简单设想：
+        #       始终监听用户的键盘事件，监听到 ctrl+v 时，如果是图片，就将其上传。命令行实现这个好困难...
+        #       要不继续退而求其次？（虽然我这样确实不太好，感觉像半吊子，但是第一版，实现了就行了呗？...）
+        #           @cmd ask_ai_and_attach_one_image -ask_and_one_img
+        #           监听键盘事件，按下 ctrl+v 的时候判断是否是图片。如果不是则循环交互响应。
+        #           如果图片成功保存，则打印：请输入你的问题，然后等待用户输入（这里好像有 goto 就好了哈哈）
+        #           用户输入自然视其为纯粹的输入... 然后问问题即可！（zaiwen 也提供了上传图片的功能）
+
         # 退而求其次，遇到空行就执行，这导致需要按两次回车...
         lines = []
         while True:
@@ -285,6 +296,7 @@ def main():
             prompt = EnableVoiceFunctionObject(url).run()
         else:
             # TODO: 这里的结构太丑陋了，没办法优化吗？尤其这个命令功能、录音功能，能模块化多好，但是最佳实践是什么呢？
+            #   而且这里的结构显然是有问题的，目前进入此处则意味着做的事情和问 ai 问题无关了。
             # 添加命令功能
             try:
                 command_controller.parse(prompt)

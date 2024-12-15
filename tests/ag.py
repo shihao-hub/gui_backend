@@ -161,7 +161,8 @@ class CommandController:
         #   题外话，多看源码？后面重点放在 Java 上最后肯定能好好提升 Python 能力的。编程是互通的。
         return command in [
             "save_last_answer",
-            "-sla"
+            "-sla",
+            "save_all",  # TODO: 注册功能
         ]
 
     def parse(self, command: str):
@@ -180,7 +181,6 @@ class CommandController:
         command = command[len(self.CMD_FLAG):].strip()
         if not self._is_defined_command(command):
             raise CommandControllerMessageException(f"@cmd {command} 未定义！")
-
         # TODO: 命令行的智能提示功能是如何实现的？比如 python manager.py shell...
         # TODO: 这些命令感觉可以生成配置，运行时就能变化...
         if command in ["save_last_answer", "-sla"]:
@@ -215,6 +215,22 @@ class CommandController:
                 file.flush()
 
             raise CommandControllerMessageException("保存上一次的回答成功！")
+        elif command == "save_all":
+            # FIXME: 目前假设 user 和 assistant 是轮着来的，而且先 user 后 assistant
+            target_path = "./resources"
+            if not os.path.exists(target_path):
+                os.mkdir(target_path)
+            cur_time = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+            filename = os.path.join(target_path, f"{cur_time}.md")
+            file = open(filename, "w", encoding="utf-8")
+            for i in range(0, len(self.messages) - 1, 2):
+                user = self.messages[i].get("content")
+                assistant = self.messages[i + 1].get("content")
+                file.write(f"## {user}\n\n")
+                file.write(f"{assistant}\n\n")
+            file.flush()
+            file.close()
+            raise CommandControllerMessageException("保存所有回答成功！")
 
 
 # -------------------------------------------------------------------------------------------------------------------- #

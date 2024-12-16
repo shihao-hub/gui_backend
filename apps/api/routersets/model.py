@@ -60,18 +60,21 @@ class UserModelSchema(ModelSchema):
         populate_by_name = True  # !!!!!! <--------
 
 
-# (N)! 分页！（为什么 ninja_extra 和 ninja 的分页函数几乎一模一样）
+# NOTE:
+#   分页！（为什么 ninja_extra 和 ninja 的分页函数几乎一模一样）
 # LimitOffsetPagination 限制偏移分页 (默认) -> limit, offset
 # PageNumberPagination 页码分页 -> page
 @router.get("/users", response=List[UserModelSchema], by_alias=True)  # !!!!!! <-------- by_alias
 @paginate(PageNumberPagination, page_size=10)
 def get_users(request: HttpRequest):
-    # (N): 这里的 UserSchema 不需要实例化，解答了为什么我修改 UserModelSchema 的 __init__ 没用！
-    # return {"data": [UserModelSchema.from_orm(e) for e in User.objects.all()]}
+    # NOTE:
+    #   这里的 UserSchema 不需要实例化，解答了为什么我修改 UserModelSchema 的 __init__ 没用！
+    #   return {"data": [UserModelSchema.from_orm(e) for e in User.objects.all()]}
 
-    # 啊？SuccessSchema 不能这样了，否则分页的时候提示：
-    # ninja.errors.ConfigError: "" has no collection response (e.g. response=List[SomeSchema])
-    # 这怎么办！这怎么办！这怎么办！这怎么办！这怎么办！这怎么办！
-    # https://django-ninja.cn/guides/response/pagination
+    # QUESTION:
+    #   啊？SuccessSchema 不能这样了，否则分页的时候提示：
+    #   ninja.errors.ConfigError: "" has no collection response (e.g. response=List[SomeSchema])
+    #   这怎么办！这怎么办！这怎么办！这怎么办！这怎么办！这怎么办！
+    #   https://django-ninja.cn/guides/response/pagination
 
     return User.objects.all()

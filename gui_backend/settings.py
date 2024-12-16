@@ -80,6 +80,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 设置国际化：他这个是如何翻译的？加上这个以后，django-allauth 居然也帮我翻译了。
     "django.middleware.locale.LocaleMiddleware",
+
+    "apps.api.middleware.RequestCountMiddleware",
 ]
 
 # -------------------------------------------------------------------------------------------------------------------- #

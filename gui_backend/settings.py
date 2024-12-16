@@ -28,7 +28,11 @@ SECRET_KEY = 'django-insecure-03=_xovz8!7iye4cm-_l5)qqg(h-647!+--#3y1eub8w=1n8-i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = [
+#     "localhost",
+#     "127.0.0.1",
+#     "10.136.110.179"
+# ]
 
 # Application definition
 
@@ -44,6 +48,16 @@ INSTALLED_APPS = [
     "ninja_crud",
     "ninja_extra",
 
+    # [django-allauth]: 记得执行 python manage.py makemigrations 和 python manage.py migrate，pip 的 app 有数据库配置
+    'django.contrib.sites',  # 添加站点框架
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # 添加你希望支持的社交认证提供者，例如：
+    'allauth.socialaccount.providers.facebook',  # Facebook
+    'allauth.socialaccount.providers.google',  # Google
+
+    # FIXME: django-cors-headers
     "corsheaders",
 
     "apps.index",
@@ -51,7 +65,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # FIXME: django-cors-headers
     "corsheaders.middleware.CorsMiddleware",  # 放在其他中间件之前，尤其是在 CommonMiddleware 之前
+
+    # [django-allauth]
+    "allauth.account.middleware.AccountMiddleware",
 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -60,8 +78,26 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 设置国际化：他这个是如何翻译的？加上这个以后，django-allauth 居然也帮我翻译了。
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
+# -------------------------------------------------------------------------------------------------------------------- #
+# [django-allauth]
+# (N)!: 这个 app 的登录页面虽然简陋，但是似乎功能挺全面？
+
+SITE_ID = 1  # 你需要为站点框架配置 SITE_ID
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # 进行邮件验证
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True  # 登录后重定向
+LOGIN_REDIRECT_URL = '/'  # 登录后重定向到主页
+ACCOUNT_LOGOUT_ON_GET = True  # 使用 GET 请求来登出
+
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",  # 默认的后端
+    "allauth.account.auth_backends.AuthenticationBackend",  # 添加 allauth 后端
+)
 # -------------------------------------------------------------------------------------------------------------------- #
 # FIXME: 2024-12-15：前后端分离跨域问题的解决办法（gpt 生成，原理我不知道）
 

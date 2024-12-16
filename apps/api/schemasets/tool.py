@@ -23,8 +23,12 @@ class Base64Request(Schema):
         UTF8 = "utf-8"
 
     mode: ModeEnum = Field(ModeEnum.ENCODE)
-    text: Optional[str] = None  # TODO: 为什么 None swagger-ui 会默认 "string"
-    file: Optional[UploadedFile] = None  # TODO: 为什么 UploadedFile swagger-ui 也会默认 "string" -> ! None 标记使它非必填
+    # QUESTION:
+    #   为什么 None swagger-ui 会默认 "string"
+    text: Optional[str] = None
+    # QUESTION:
+    #   为什么 UploadedFile swagger-ui 也会默认 "string" -> ! None 标记使它非必填
+    file: Optional[UploadedFile] = None
     response_encoding: ResponseEncodingEnum = Field(ResponseEncodingEnum.UTF8)
 
     def get_pending_text(self) -> str:
@@ -33,7 +37,7 @@ class Base64Request(Schema):
             res = self.file.read().decode(self.response_encoding.value)
         return res
 
-    @validator("text", always=True)  # TODO: 虽然被弃用的，但是还能用，暂且如此吧
+    @validator("text", always=True)  # 虽然被弃用的，但是还能用，暂且如此吧
     def check_text_or_file(cls, text, values):
         file = values.get("file")
         if text is None and file is None:

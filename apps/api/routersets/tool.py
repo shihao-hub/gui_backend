@@ -114,8 +114,8 @@ class CommentCollectorController:
             return res
 
         def run(self):
-
-            # file 只能被消耗一次。此处如果启用的话，file 被消耗后再使用就是 b'' 空文件！
+            # NOTE:
+            #   file 只能被消耗一次。此处如果启用的话，file 被消耗后再使用就是 b'' 空文件！
             # fs = FileSystemStorage(location=str(settings.BASE_DIR / "temporary"))  # django 的文件系统
             # filename = fs.save(file.name, file)
             # file_url = fs.url(filename)  # 文件路径
@@ -149,9 +149,10 @@ class CommentCollectorController:
         return self.CollectCommentsFObj(mode, files).run()
 
 
-# 注意，一个文件中的函数请勿重名
-# Warning: operation_id "apps_api_viewsets_tool_format_markdown" is already used
-# (Try giving a different name to: apps.api.viewsets.tool.format_markdown)
+# ATTENTION:
+#   注意，一个文件中的函数请勿重名
+#   Warning: operation_id "apps_api_viewsets_tool_format_markdown" is already used
+#   (Try giving a different name to: apps.api.viewsets.tool.format_markdown)
 
 
 @router.post("/format_markdown", summary="格式化 markdown 文件")
@@ -160,9 +161,9 @@ class CommentCollectorController:
 @knowledge("raise HttpError(status_code, message)")
 def format_markdown(request: HttpRequest, query: Query[FormatMarkDownRequestQuery], file: File[UploadedFile]):
     """
-    格式化 markdown 文件
-    - 中英文间隔一个空格，形如标题这般
-    - 增加开关，用于控制是否需要在英文句子的前后加 "```"
+        格式化 markdown 文件
+        - 中英文间隔一个空格，形如标题这般
+        - 增加开关，用于控制是否需要在英文句子的前后加 "```"
     """
     # TODO: 封装成类
     location = str(settings.BASE_DIR / f"file_system_storage_location/{timezone.now().strftime('%Y-%m-%d')}")

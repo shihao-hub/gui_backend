@@ -4,7 +4,10 @@ django-ninja
 django-ninja-crud
 django-ninja-extra
 
-django-cors-headers # 专门用于处理 CORS 的库，确保前端能顺利与 Django REST API 通信
+django-cors-headers # 专门用于处理 CORS 的库，确保前端能顺利与 Django REST API 通信（不确定有没有用上这个库）
+
+django-allauth # gpt 回复
+jwt
 
 redis
 
@@ -29,3 +32,7 @@ pydub
 uvicorn
 starlette
 # logfire # -> logfire.exceptions.LogfireConfigError: Failed to request a device code.
+
+pyaudio
+keyboard
+Pillow

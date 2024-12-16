@@ -15,16 +15,16 @@ log = Log()
 
 class SuccessSchema(Schema):
     """
-    {
-        "success": True,
-        "message": "Books retrieved successfully.",
-        "data": [],
-        "meta": {
-            "requestId": "abc124",
-            "timestamp": "2023-10-01T12:35:00Z"
-        },
-        "errors": null,
-    }
+        {
+            "success": True,
+            "message": "Books retrieved successfully.",
+            "data": [],
+            "meta": {
+                "requestId": "abc124",
+                "timestamp": "2023-10-01T12:35:00Z"
+            },
+            "errors": null,
+        }
     """
     success: bool = True
     message: str = ""
@@ -54,7 +54,8 @@ class SuccessSchema(Schema):
     #     values['meta'] = meta  # 'DjangoGetter' object does not support item assignment
     #     return values
 
-    # FIXME: 试图在 response=SuccessSchema 时，返回当时的时间点，但是 DjangoGetter 不允许修改...
+    # FIXME:
+    #   试图在 response=SuccessSchema 时，返回当时的时间点，但是 DjangoGetter 不允许修改...
     #   而且即便由于 meta 是字典这种可变对象，我修改了它，但是实际上修改的还是类变量！！！
     #   毕竟是 classmethod 方法... 这个主要是校验用的...
     #   django-ninja 返回的时候多半调用的是 Schema 内的 from_orm/json_schema 方法，它们也是 classmethod！！！
@@ -72,24 +73,24 @@ class SuccessSchema(Schema):
 
 class ErrorSchema(Schema):
     """
-    {
-        "success": False,
-        "message": "The user with ID 1 was not found.",
-        "data": null,
-        "meta": {
-            "requestId": "abc126",
-            "timestamp": "2023-10-01T12:36:00Z"
-        },
-        "errors": [
-            {
-                "code": "USER_NOT_FOUND",
-                "message": "The user with ID 1 was not found.",
-                "details": {
-                    "requestedId": 1
+        {
+            "success": False,
+            "message": "The user with ID 1 was not found.",
+            "data": null,
+            "meta": {
+                "requestId": "abc126",
+                "timestamp": "2023-10-01T12:36:00Z"
+            },
+            "errors": [
+                {
+                    "code": "USER_NOT_FOUND",
+                    "message": "The user with ID 1 was not found.",
+                    "details": {
+                        "requestedId": 1
+                    }
                 }
-            }
-        ],
-    }
+            ],
+        }
     """
     success: bool = False
     message: str = ""

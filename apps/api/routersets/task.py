@@ -16,7 +16,8 @@ log = Log()
 router = Router(tags=["task"])
 
 
-# 为什么必须设置 200 和 其他？200 为什么没有默认值？那这样的话我不如封装一个 response 函数呢...
+# QUESTION:
+#   为什么必须设置 200 和 其他？200 为什么没有默认值？那这样的话我不如封装一个 response 函数呢...
 @router.post("/timed_message", response=generic_response, summary="定时发送信息")
 @knowledge("email")
 def timed_message(request: HttpRequest, data: TimedMessageRequest):

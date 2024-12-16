@@ -35,40 +35,40 @@ class QuickNoteController:
     def _remove_element_by_index(self, index: int):
         # lua script：使用 lrange 找出不需要删除的元素，然后将旧列表删除，创建新列表...（redis 服务器有影响，web 服务器没影响）
         lua_script = """
-        local index = tonumber(ARGV[1])
-        local list_key = KEYS[1]
-        local len = redis.call("LLEN", list_key)
-
-        if index < 0 then
-            index = len + index  -- 处理负索引
-        end
-
-        if index >= len or index < 0 then
-            return nil  -- 索引超出范围
-        end
-
-        redis.log(redis.LOG_NOTICE, "index: " .. index)
-
-        local first_part, second_part
-        if index == 0 then
-            -- 如果 index 是 0，直接处理。因为 redis.call("LRANGE", list_key, 0, index - 1) 返回的不是空列表！
-            first_part = {}
-            second_part = redis.call("LRANGE", list_key, 1, -1)  -- 从 1 到 -1 获取后面的部分
-        else
-            first_part = redis.call("LRANGE", list_key, 0, index - 1)
-            second_part = redis.call("LRANGE", list_key, index + 1, -1)
-        end
-
-        redis.call("DEL", list_key)  -- 删除原列表
-        for _, v in ipairs(first_part) do
-            redis.call("RPUSH", list_key, v)  -- 重新添加前面的部分
-        end
-
-        for _, v in ipairs(second_part) do
-            redis.call("RPUSH", list_key, v)  -- 重新添加后面的部分
-        end
-
-        return 1  -- 返回成功
+            local index = tonumber(ARGV[1])
+            local list_key = KEYS[1]
+            local len = redis.call("LLEN", list_key)
+    
+            if index < 0 then
+                index = len + index  -- 处理负索引
+            end
+    
+            if index >= len or index < 0 then
+                return nil  -- 索引超出范围
+            end
+    
+            redis.log(redis.LOG_NOTICE, "index: " .. index)
+    
+            local first_part, second_part
+            if index == 0 then
+                -- 如果 index 是 0，直接处理。因为 redis.call("LRANGE", list_key, 0, index - 1) 返回的不是空列表！
+                first_part = {}
+                second_part = redis.call("LRANGE", list_key, 1, -1)  -- 从 1 到 -1 获取后面的部分
+            else
+                first_part = redis.call("LRANGE", list_key, 0, index - 1)
+                second_part = redis.call("LRANGE", list_key, index + 1, -1)
+            end
+    
+            redis.call("DEL", list_key)  -- 删除原列表
+            for _, v in ipairs(first_part) do
+                redis.call("RPUSH", list_key, v)  -- 重新添加前面的部分
+            end
+    
+            for _, v in ipairs(second_part) do
+                redis.call("RPUSH", list_key, v)  -- 重新添加后面的部分
+            end
+    
+            return 1  -- 返回成功
         """
         return db.eval(lua_script, 1, self.REDIS_KEY, index)
 
@@ -107,7 +107,8 @@ class QuickNoteController:
         return {"data": data[0].decode("utf-8")}
 
 
-# TODO: ninja_extra 注册的时候，似乎都是同一个函数。所以这代码似乎无法复用...
+# TODO:
+#   ninja_extra 注册的时候，似乎都是同一个函数。所以这代码似乎无法复用...
 #   原理是啥？
 #   题外话，关于重复代码，我应该遵循事不过三，第三次重复再考虑复用！
 # @api_controller("/redis/todolist", tags=router.tags, permissions=[])
@@ -119,8 +120,9 @@ class QuickNoteController:
 # TODO: 用前端技术实现一个 todolist 页面，关键元素：列表、增、删、改
 @api_controller("/redis/todolist", tags=router.tags, permissions=[])
 class TodoListController:
-    # 此处的代码是随便让 gpt 提供的 redis 代码，结构是不正确的。毕竟 list 存可以，删怎么办，序号都变了
-    # 欸，不对。序号变了也没问题，如果有前端的话。每次删除都会重新调用查询接口啊？那怕什么呢？
+    # QUESTION:
+    #   此处的代码是随便让 gpt 提供的 redis 代码，结构是不正确的。毕竟 list 存可以，删怎么办，序号都变了
+    #   欸，不对。序号变了也没问题，如果有前端的话。每次删除都会重新调用查询接口啊？那怕什么呢？
 
     TODO_LIST_KEY = "api:redis:todo_list"  # redis list
 
@@ -139,40 +141,40 @@ class TodoListController:
     def _remove_element_by_index(self, index: int):
         # lua script：使用 lrange 找出不需要删除的元素，然后将旧列表删除，创建新列表...（redis 服务器有影响，web 服务器没影响）
         lua_script = """
-        local index = tonumber(ARGV[1])
-        local list_key = KEYS[1]
-        local len = redis.call("LLEN", list_key)
-        
-        if index < 0 then
-            index = len + index  -- 处理负索引
-        end
-        
-        if index >= len or index < 0 then
-            return nil  -- 索引超出范围
-        end
-        
-        redis.log(redis.LOG_NOTICE, "index: " .. index)
-        
-        local first_part, second_part
-        if index == 0 then
-            -- 如果 index 是 0，直接处理。因为 redis.call("LRANGE", list_key, 0, index - 1) 返回的不是空列表！
-            first_part = {}
-            second_part = redis.call("LRANGE", list_key, 1, -1)  -- 从 1 到 -1 获取后面的部分
-        else
-            first_part = redis.call("LRANGE", list_key, 0, index - 1)
-            second_part = redis.call("LRANGE", list_key, index + 1, -1)
-        end
-        
-        redis.call("DEL", list_key)  -- 删除原列表
-        for _, v in ipairs(first_part) do
-            redis.call("RPUSH", list_key, v)  -- 重新添加前面的部分
-        end
-        
-        for _, v in ipairs(second_part) do
-            redis.call("RPUSH", list_key, v)  -- 重新添加后面的部分
-        end
-
-        return 1  -- 返回成功
+            local index = tonumber(ARGV[1])
+            local list_key = KEYS[1]
+            local len = redis.call("LLEN", list_key)
+            
+            if index < 0 then
+                index = len + index  -- 处理负索引
+            end
+            
+            if index >= len or index < 0 then
+                return nil  -- 索引超出范围
+            end
+            
+            redis.log(redis.LOG_NOTICE, "index: " .. index)
+            
+            local first_part, second_part
+            if index == 0 then
+                -- 如果 index 是 0，直接处理。因为 redis.call("LRANGE", list_key, 0, index - 1) 返回的不是空列表！
+                first_part = {}
+                second_part = redis.call("LRANGE", list_key, 1, -1)  -- 从 1 到 -1 获取后面的部分
+            else
+                first_part = redis.call("LRANGE", list_key, 0, index - 1)
+                second_part = redis.call("LRANGE", list_key, index + 1, -1)
+            end
+            
+            redis.call("DEL", list_key)  -- 删除原列表
+            for _, v in ipairs(first_part) do
+                redis.call("RPUSH", list_key, v)  -- 重新添加前面的部分
+            end
+            
+            for _, v in ipairs(second_part) do
+                redis.call("RPUSH", list_key, v)  -- 重新添加后面的部分
+            end
+    
+            return 1  -- 返回成功
         """
         return db.eval(lua_script, 1, self.TODO_LIST_KEY, index)
 

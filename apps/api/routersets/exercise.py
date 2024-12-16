@@ -13,8 +13,8 @@ log = Log()
 router = Router(tags=["exercise"])
 
 
-# ninja_crud 和 ninja_extra 咋总是破坏我的结构！
-
+# NOTE:
+#   ninja_crud 和 ninja_extra 咋总是破坏我的结构！
 
 # TODO: 把 async 用异步服务器运行起来！！！用 python 练习 async，那么学习 js 的异步时应该更好掌握！
 @router.get("/say")

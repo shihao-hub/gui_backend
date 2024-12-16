@@ -88,13 +88,13 @@ def summarize_text(request: HttpRequest, prompt: Form[str]):
 @router.post("/ask_english_ai", summary="问 英语学习 ai")
 def ask_english_ai(request: HttpRequest, prompt: str = Form(max_length=1000)):
     init_prompt = """
-    在接下来的对话中，你要帮助我学习英语。因为我的英语水平有限，所以拼写可能会不准确，如果语句不通顺，请猜测我要表达的意思。在之后的对话中，除了正常理解并回复我的问题以外，还要指出我说的英文中的语法错误和拼写错误。
-    并且在以后的对话中都要按照以下格式回复:
-    【翻译】此处将英文翻译成中文
-    【回复】此处写你的正常回复
-    【勘误】此处写我说的英文中的语法错误和拼写错误，如果夹杂汉字，请告诉我它的英文
-    【提示】如果有更好或更加礼貌的英文表达方式，在此处告诉我如果你能明白并能够照做
-    请说“我明白了”
+        在接下来的对话中，你要帮助我学习英语。因为我的英语水平有限，所以拼写可能会不准确，如果语句不通顺，请猜测我要表达的意思。在之后的对话中，除了正常理解并回复我的问题以外，还要指出我说的英文中的语法错误和拼写错误。
+        并且在以后的对话中都要按照以下格式回复:
+        【翻译】此处将英文翻译成中文
+        【回复】此处写你的正常回复
+        【勘误】此处写我说的英文中的语法错误和拼写错误，如果夹杂汉字，请告诉我它的英文
+        【提示】如果有更好或更加礼貌的英文表达方式，在此处告诉我如果你能明白并能够照做
+        请说“我明白了”
     """
     # 使用经典同步
     message = [
@@ -146,6 +146,7 @@ def summarize_url_content(request: HttpRequest, url: Form[HttpUrl], ask_ai_direc
                 # FIXME:
                 #   抱歉，我无法直接访问外部链接或浏览网络内容。但是，我可以帮助你总结相关主题或内容。
                 #   如果你能提供网页上的一些文本或主要信息，我会很乐意帮助你翻译和总结。
+
                 # TODO: 突然意识到一个问题，我上次写的收集 N Q 的那个功能，用 todo 的正则表达式规则不就行了？-> `\btodo\b.*`
                 "content": "请访问下面这个 url，然后将其中的内容用中文总结一下\n\n" + str(url),
             }
@@ -155,6 +156,7 @@ def summarize_url_content(request: HttpRequest, url: Form[HttpUrl], ask_ai_direc
     # TODO: 很多网站都需要登录怎么解决？
     #   有些网站没关系：https://www.ruanyifeng.com/blog、https://www.codedump.info 等
     #       国外好多网站不需要登录！
+
     # TODO: 将 get 到的 html 中文文本抽出来
     #   2024-12-14-173427.md
     #   涉及爬虫技术 -> requests, lxml, Beautiful Soup, Scrapy, Selenium, Pandas, Puppeteer, Requests-HTML,

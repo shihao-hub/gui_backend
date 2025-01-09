@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 import requests
+import aiohttp
 import bs4
 from pydantic import HttpUrl
 
@@ -60,6 +61,23 @@ def _get_ai_event_steam_response(message: List[Dict]):
     return response
 
 
+async def _async_get_ai_response(message: List[Dict]):
+    url = "https://aliyun.zaiwen.top/admin/chatbot"
+    data = {
+        "message": message,
+        "mode": "gpt4_o_mini",
+        "prompt_id": "",
+        "key": None
+    }
+    res = []
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=data) as response:
+            async for line in response.content:
+                if line:
+                    res.append(line.decode("utf-8"))
+    return res
+
+
 @router.post("/ask_ai_one_question", summary="问 ai 一个问题")
 def ask_ai_one_question(request: HttpRequest, prompt: str = Form(max_length=1000)):
     message = [
@@ -114,8 +132,6 @@ def ask_english_ai(request: HttpRequest, prompt: str = Form(max_length=1000)):
     ]
 
     try:
-        log.info(f"123")
-
         return _get_ai_event_steam_response(message)
     except Exception as e:
         log.error(f"ask_english_ai error: {e}", print_stack=True)
@@ -139,6 +155,14 @@ def ask_function_naming_ai(request: HttpRequest, prompt: str = Form(max_length=1
 
 @router.post("/summarize_url_content", response=generic_response, summary="ai 总结网址信息")
 def summarize_url_content(request: HttpRequest, url: Form[HttpUrl], ask_ai_directly: bool = False):
+    class Local:
+        @staticmethod
+        def get_text_of_html():
+            soup = bs4.BeautifulSoup(html_content, 'html.parser')
+            return soup.get_text(strip=False)  # strip=True 会去除空白符
+
+    loc = Local()
+
     if ask_ai_directly:
         message = [
             {
@@ -163,13 +187,9 @@ def summarize_url_content(request: HttpRequest, url: Form[HttpUrl], ask_ai_direc
     response = requests.get(url, verify=False)
     html_content = response.content.decode("utf-8")
 
-    def get_text_of_html():
-        soup = bs4.BeautifulSoup(html_content, 'html.parser')
-        return soup.get_text(strip=False)  # strip=True 会去除空白符
+    content = loc.get_text_of_html()
 
-    content = get_text_of_html()
-
-    log.info(content)
+    # log.info(content)
     message = [
         {
             "role": "user",

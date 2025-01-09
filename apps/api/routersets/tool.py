@@ -1,6 +1,7 @@
 import base64
 import functools
 import os.path
+import pprint
 import re
 import shutil
 import sqlite3
@@ -21,7 +22,7 @@ from django.core.files.storage import FileSystemStorage
 from django.views.decorators.cache import cache_page
 from django.utils import timezone
 from django.http import HttpRequest, HttpResponse, FileResponse
-from ninja import Router, UploadedFile, File, Query
+from ninja import Router, UploadedFile, File, Query, Form
 from ninja.errors import HttpError
 from ninja.decorators import decorate_view
 from ninja_extra import api_controller, http_post, http_get, http_put, http_delete, http_patch
@@ -83,10 +84,18 @@ class CommentCollectorController:
             return res
 
         def get_comments(self, file: BytesIO):
+            res = []
             content: bytes = file.read()
             # log.info(f"{_file} -> {content}")
             content_str = content.decode(chardet.detect(content).get("encoding"))
-            return self._collect_comments_by_pattern(re.compile(rf"\({self.mode[0]}\)!:\s*(.*)"), content_str)
+            pattern_list = [
+                re.compile(rf"\({self.mode.upper()}\)!:\s*(.*)"),  # re.IGNORECASE
+                re.compile(rf"{self.mode.upper()}:\s*(.*)")
+            ]
+            for pattern in pattern_list:
+                log.info(f"pattern: {pattern.pattern}")
+                res += self._collect_comments_by_pattern(pattern, content_str)
+            return res
 
         def handle_zip_file(self, file: UploadedFile) -> dict:
             res = {}
@@ -134,6 +143,9 @@ class CommentCollectorController:
                 res.setdefault(file.name, [])
                 res[file.name] += self.get_comments(bytes_io)
 
+            # filter empty list
+            res = {k: v for k, v in res.items() if v}
+
             return {"data": res}
 
     @http_post("/collect_comments", response=generic_response, summary="筛选文件中符合条件的注释")
@@ -146,6 +158,7 @@ class CommentCollectorController:
                          # files: List[UploadedFile] = File(...)): -> ninja 0.x.x 版本
                          files: File[List[UploadedFile]]):
 
+        # TODO: 与 mode 紧挨在一起的连续行注释都应该提取出来
         return self.CollectCommentsFObj(mode, files).run()
 
 
@@ -293,3 +306,17 @@ def convert_audio_to_text(request: HttpRequest, audio: File[UploadedFile]):
         raise ServiceUnavailableError("无法请求结果")
 
     return {"data": text}
+
+
+@router.post("/temp_add_filepath_information")
+def temp_add_filepath_information(request: HttpRequest, filepaths: List[str]):
+    # filepaths: List[str] = Form() 前端会自动用 , 连接。。。抽象
+    db = app_settings.mongodb_db
+    co = db.get_collection("temp_add_filepath_information:filepaths")
+    saved_filepaths = []
+    for filepath in filepaths:
+        if co.find_one({"filepath": filepath}) is None:
+            saved_filepaths.append(filepath)
+    if saved_filepaths:
+        co.insert_many([{"filepath": filepath} for filepath in saved_filepaths])
+    return {"inserted_count": len(saved_filepaths)}

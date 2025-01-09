@@ -1,4 +1,18 @@
 """
+### 控制流图（CFG）
+flowchart TD
+    A[开始] --> B{剪切板内容是否变化}
+    B -->|是| C[重置超时计时器]
+    C --> D[保存新内容]
+    D --> E[打印新内容]
+    E --> F[继续循环]
+    B -->|否| G[检测是否超时]
+    G -->|是| H[触发超时回调]
+    H --> I[保存数据]
+    I --> J[终止进程]
+    G -->|否| F
+    F --
+
 ### 注意事项
 1. 存在超时终止机制
 2. 两种方法，第一种使用了远程 http 接口，第二种使用了 sqlite3 的 :memory: 连接
@@ -100,9 +114,7 @@ class FilePathCacher:
         if self._is_up_to_upper_limit() or invoke:
             self._save_filepaths()
             self._filepaths.clear()
-            self._filepaths.append(value)
-        else:
-            self._filepaths.append(value)
+        self._filepaths.append(value)
 
     # ---------------------------------------------------------------------------------------------------------------- #
 

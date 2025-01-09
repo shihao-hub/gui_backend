@@ -149,146 +149,161 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>待办事项清单</h1>
+<div class="container">
+    <!--
+                待办事项清单
+                添加的输入框 + 添加按钮 构成的 form
+                展示待办事项的 div
+    -->
+    <h1>待办事项清单</h1>
 
-        <form id="addForm">
-            <input type="text" id="newTodo" placeholder="输入新的待办事项" required>
-            <button type="submit" class="btn btn-add">添加</button>
-        </form>
+    <form id="addForm">
+        <input type="text" id="newTodo" placeholder="输入新的待办事项" required>
+        <button type="submit" class="btn btn-add">添加</button>
+    </form>
 
-        <div class="todo-container" id="todoList"></div>
-    </div>
+    <div class="todo-container" id="todoList"></div>
+</div>
 
-    <script>
-        const API_BASE_URL = 'http://127.0.0.1:8888';
-        let todos = [];
+<script>
+    const API_BASE_URL = 'http://localhost:8888';
+    let todos = [];
 
-        // 获取所有待办事项
-        async function fetchTodos() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/redis/todolist`);
-                if (!response.ok) throw new Error('获取待办事项失败');
-                const resp_data = await response.json();
-                todos = resp_data.data;
-                renderTodos();
-            } catch (error) {
-                console.error('获取待办事项失败:', error);
-                alert('获取待办事项失败，请稍后重试');
-            }
+    // 获取所有待办事项
+    async function fetchTodos() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/redis/todolist`);
+            if (!response.ok) throw new Error('获取待办事项失败');
+            const resp_data = await response.json();
+            todos = resp_data.data;
+            renderTodos();
+        } catch (error) {
+            console.error('获取待办事项失败:', error);
+            alert('获取待办事项失败，请稍后重试');
+        }
+    }
+
+    // 渲染待办事项列表
+    function renderTodos() {
+        const todoList = document.getElementById('todoList');
+        todoList.innerHTML = '';
+
+        if (todos.length === 0) {
+            todoList.innerHTML = '<div class="empty-state">暂无待办事项</div>';
+            return;
         }
 
-        // 渲染待办事项列表
-        function renderTodos() {
-            const todoList = document.getElementById('todoList');
-            todoList.innerHTML = '';
-
-            if (todos.length === 0) {
-                todoList.innerHTML = '<div class="empty-state">暂无待办事项</div>';
-                return;
-            }
-
-            todos.forEach((todo, index) => {
-                const div = document.createElement('div');
-                div.className = 'todo-item';
-                div.innerHTML = `
+        todos.forEach((todo, index) => {
+            // console.log(todo, index); // content, index
+            const div = document.createElement('div');
+            div.className = 'todo-item';
+            // 此处是 span class 控制，有 completed class 的 span 有不一样的样式
+            div.innerHTML = `
                     <span class="todo-text ${todo.completed ? 'completed' : ''}" onclick="toggleTodo(${index})">${todo}</span>
                     <div class="todo-actions">
                         <button class="btn btn-edit" onclick="editTodo(${index})">编辑</button>
                         <button class="btn btn-delete" onclick="deleteTodo(${index})">删除</button>
                     </div>
                 `;
-                todoList.appendChild(div);
-            });
-        }
-
-        // 添加待办事项
-        document.getElementById('addForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('newTodo');
-            const value = input.value.trim();
-
-            if (value) {
-                try {
-                    const formData = new FormData();
-                    formData.append('value', value);
-
-                    const response = await fetch(`${API_BASE_URL}/api/redis/todolist`, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) throw new Error('添加待办事项失败');
-
-                    input.value = '';
-                    await fetchTodos(); // 重新获取列表
-                } catch (error) {
-                    console.error('添加待办事项失败:', error);
-                    alert('添加待办事项失败，请稍后重试');
-                }
-            }
+            todoList.appendChild(div);
         });
+    }
 
-        // 删除待办事项
-        async function deleteTodo(index) {
-            if (confirm('确定要删除这个待办事项吗？')) {
-                try {
-                    const formData = new FormData();
-                    formData.append('index', index);
+    // 添加待办事项
+    document.getElementById('addForm').addEventListener('submit', async (e) => {
+        // console.log(e, typeof e); // SubmitEvent
 
-                    const response = await fetch(`${API_BASE_URL}/api/redis/todolist/delete?index=${index}`, {
-                        method: 'DELETE',
-                        // body: formData // 此处后端不是表单，是查询参数
-                    });
+        e.preventDefault();
+        const input = document.getElementById('newTodo');
+        const value = input.value.trim();
 
-                    if (!response.ok) throw new Error('删除待办事项失败');
-
-                    await fetchTodos(); // 重新获取列表
-                } catch (error) {
-                    console.error('删除待办事项失败:', error);
-                    alert('删除待办事项失败，请稍后重试');
-                }
-            }
+        if (!value) {
+            return;
         }
 
-        // 编辑待办事项
-        async function editTodo(index) {
-            // 先获取指定待办事项
+        try {
+            const formData = new FormData();
+            formData.append('value', value);
+
+            const response = await fetch(`${API_BASE_URL}/api/redis/todolist`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('添加待办事项失败');
+
+            input.value = '';
+            await fetchTodos(); // 重新获取列表
+        } catch (error) {
+            console.error('添加待办事项失败:', error);
+            alert('添加待办事项失败，请稍后重试');
+        }
+    });
+
+    // 删除待办事项
+    async function deleteTodo(index) {
+        if (confirm('确定要删除这个待办事项吗？')) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/redis/todolist/${index}`);
-                if (!response.ok) throw new Error('获取待办事项详情失败');
-                const resp_data = await response.json();
-                const todoItem = resp_data.data;
+                // const formData = new FormData();
+                // formData.append('index', index);
 
-                const newText = prompt('编辑待办事项:', todoItem);
-                if (newText !== null && newText.trim() !== '') {
-                    const formData = new FormData();
-                    formData.append('content', newText.trim());
+                const response = await fetch(`${API_BASE_URL}/api/redis/todolist/delete?index=${index}`, {
+                    method: 'DELETE',
+                    // body: formData // 此处后端不是表单，是查询参数
+                });
 
-                    const updateResponse = await fetch(`${API_BASE_URL}/api/redis/todolist/${index}`, {
-                        method: 'POST',
-                        body: formData
-                    });
+                if (!response.ok) throw new Error('删除待办事项失败');
 
-                    if (!updateResponse.ok) throw new Error('更新待办事项失败');
-
-                    await fetchTodos(); // 重新获取列表
-                }
+                await fetchTodos(); // 重新获取列表
             } catch (error) {
-                console.error('编辑待办事项失败:', error);
-                alert('编辑待办事项失败，请稍后重试');
+                console.error('删除待办事项失败:', error);
+                alert('删除待办事项失败，请稍后重试');
             }
         }
+    }
 
-        // 切换完成状态（如果后端API支持的话）
-        function toggleTodo(index) {
+    // 编辑待办事项
+    async function editTodo(index) {
+        // 先获取指定待办事项
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/redis/todolist/${index}`);
+            if (!response.ok) throw new Error('获取待办事项详情失败');
+            const resp_data = await response.json();
+            const todoItem = resp_data.data;
+
+            const newText = prompt('编辑待办事项:', todoItem);
+            if (newText !== null && newText.trim() !== '') {
+                const formData = new FormData();
+                formData.append('content', newText.trim());
+
+                const updateResponse = await fetch(`${API_BASE_URL}/api/redis/todolist/${index}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!updateResponse.ok) throw new Error('更新待办事项失败');
+
+                await fetchTodos(); // 重新获取列表
+            }
+        } catch (error) {
+            console.error('编辑待办事项失败:', error);
+            alert('编辑待办事项失败，请稍后重试');
+        }
+    }
+
+    // 切换完成状态（如果后端API支持的话）
+    function toggleTodo(index) {
+        try {
             todos[index].completed = !todos[index].completed;
             renderTodos();
+        } catch (e) {
+            console.log(e);
         }
+    }
 
-        // 初始加载
-        fetchTodos();
-    </script>
+    // 初始加载
+    fetchTodos();
+</script>
 </body>
 
 </html>

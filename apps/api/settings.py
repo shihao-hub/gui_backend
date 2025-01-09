@@ -1,6 +1,7 @@
 import os
 import sys
 
+import pymongo
 import redis
 
 from django.conf import settings
@@ -9,6 +10,9 @@ RESOURCES = settings.BASE_DIR / "apps/api/resources"
 
 # redis connect/db 0
 redis_db = redis.StrictRedis(host="localhost", port=6379, db=0)
+
+# mongodb
+mongodb_db = pymongo.MongoClient("mongodb://localhost:27017/").get_database("0")
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Redis Queue

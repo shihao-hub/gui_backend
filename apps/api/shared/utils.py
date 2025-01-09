@@ -2,7 +2,10 @@ import os
 import warnings
 from typing import List
 
+import orjson
+
 from ninja import NinjaAPI, Router
+from ninja.parser import Parser
 
 from apps.api.schemasets import SuccessSchema, ErrorSchema
 
@@ -14,6 +17,10 @@ generic_response = {200: SuccessSchema, 400: ErrorSchema}
 # 以我目前的理解，返回 success、error Response 更方便
 # ninja 提供 response 肯定由它的道理的，只是我不太理解罢了
 # 猜测1：可能是为了 api/docs 详细点？但我直接约定不行吗？默认 200、400 的结构。约定大于配置不好吗？何必代码里重复那么多？
+
+class ORJSONParser(Parser):
+    def parse_body(self, request):
+        return orjson.loads(request.body)
 
 
 def get_registered_router(api: NinjaAPI, file: str, extra_tags: List = None) -> Router:

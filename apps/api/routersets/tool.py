@@ -295,7 +295,7 @@ def convert_audio_to_text(request: HttpRequest, audio: File[UploadedFile]):
     with sr.AudioFile(audio) as source:
         audio_data = recognizer.record(source)  # 读取音频文件
 
-    # 使用Google Web服务进行识别
+    # 使用 Google Web 服务进行识别
     try:
         text = recognizer.recognize_google(audio_data, language='zh-CN')  # 中文识别
     except sr.UnknownValueError as e:
@@ -306,6 +306,12 @@ def convert_audio_to_text(request: HttpRequest, audio: File[UploadedFile]):
         raise ServiceUnavailableError("无法请求结果")
 
     return {"data": text}
+
+
+def tool_register_controllers(api):
+    api.register_controllers(
+        CommentCollectorController
+    )
 
 
 @router.post("/temp_add_filepath_information")

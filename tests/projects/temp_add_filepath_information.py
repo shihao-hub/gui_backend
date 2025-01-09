@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS filepaths(
 TIMEOUT_SENDING_MAX_TIME_INTERVAL = 5
 
 
+# TODO: 此处有机会练习数据分析的只是
+
 class FilePathCacher:
     def __init__(self, max_len: int = 10):
         self._max_len = max_len

@@ -3,26 +3,18 @@
 
 import traceback
 
-import orjson
-
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest
-from ninja.parser import Parser
 from ninja_extra import NinjaExtraAPI
 
 from apps.api.exceptions import ServiceUnavailableError, BadRequestError
-from apps.api.routersets.tool import CommentCollectorController
-from apps.api.routersets.redis import TodoListController, QuickNoteController
+from apps.api.routersets.tool import tool_register_controllers
+from apps.api.routersets.redis import redis_register_controllers
 from apps.api.schemasets import ErrorSchema
+from apps.api.shared.utils import ORJSONParser
 from apps.core.shared.log import Log
 
 log = Log()
-
-
-class ORJSONParser(Parser):
-    def parse_body(self, request):
-        return orjson.loads(request.body)
-
 
 api = NinjaExtraAPI(parser=ORJSONParser(), docs_decorator=None)  # staff_member_required -> 访问 API 文档需要登录
 
@@ -35,14 +27,12 @@ api.add_router("/redis", "apps.api.routersets.redis.router")
 api.add_router("/task", "apps.api.routersets.task.router")
 api.add_router("/tool", "apps.api.routersets.tool.router")
 
+redis_register_controllers(api)
+tool_register_controllers(api)
+
+
 # TODO: ninja_extra 的如何测试？【必须看一下源码】，找到它的 router 比较重要...
 #   题外话，【如何阅读源码呢？】不画图真的很难（因为跳来跳去），但是画什么图呢？类图？【是不是又得学 UML？】
-api.register_controllers(
-    CommentCollectorController,
-    TodoListController,
-    QuickNoteController
-)
-
 
 # -------------------------------------------------------------------------------------------------------------------- #
 #

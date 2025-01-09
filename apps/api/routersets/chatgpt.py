@@ -8,6 +8,7 @@ from pydantic import HttpUrl
 from django.http import HttpRequest, StreamingHttpResponse
 from ninja import Router, Form
 
+from apps.api.constantsets import chatgpt_prompts
 from apps.api.shared.utils import generic_response, get_registered_router
 from apps.core.shared.log import Log
 from apps.core.shared.utils import knowledge
@@ -97,7 +98,7 @@ def summarize_text(request: HttpRequest, prompt: Form[str]):
     message = [
         {
             "role": "user",
-            "content": "请帮我将下面的内容用中文总结一下\n\n" + prompt,
+            "content": chatgpt_prompts.apis.get("summarize_text").format(prompt=prompt),
         }
     ]
     return _get_ai_event_steam_response(message)
@@ -139,10 +140,7 @@ def ask_english_ai(request: HttpRequest, prompt: str = Form(max_length=1000)):
 
 @router.post("/ask_function_naming_ai", summary="问 函数命名 ai")
 def ask_function_naming_ai(request: HttpRequest, prompt: str = Form(max_length=100)):
-    prompt_format = """
-        我有一个功能为：{prompt} 的函数，请帮我命名。
-        要求：你的回复只能是一个 json 列表，使用蛇形命名法（markdown 的相关内容也不需要）
-    """
+    prompt_format = chatgpt_prompts.apis.get("ask_function_naming_ai")
     prompt = prompt_format.format(prompt=prompt)
     message = [
         {
@@ -194,7 +192,7 @@ def summarize_url_content(request: HttpRequest, url: Form[HttpUrl], ask_ai_direc
         {
             "role": "user",
             # TODO: 找到更优的 prompt
-            "content": "请帮我将下面的文章内容用中文总结一下\n\n" + content,
+            "content": chatgpt_prompts.apis.get("summarize_url_content").format(prompt=content),
         }
     ]
     return _get_ai_event_steam_response(message)

@@ -219,3 +219,10 @@ class TodoListController:
 @api_controller("/redis/todolist/v2", tags=router.tags)
 class TodoListV2Controller:
     pass
+
+
+def redis_register_controllers(api):
+    api.register_controllers(
+        TodoListController,
+        QuickNoteController
+    )

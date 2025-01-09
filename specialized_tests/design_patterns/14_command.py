@@ -46,6 +46,8 @@ class RemoteControl(Invoker):
             command.execute()
 
 
+# -------------------------------------------------------------------------------------------------------------------- #
+
 class Light(Receiver):
     def turn_on(self):
         print("The light is on")
@@ -68,6 +70,9 @@ class LightOffCommand(Command):
 
     def execute(self):
         self.light.turn_off()
+
+
+# -------------------------------------------------------------------------------------------------------------------- #
 
 
 def main():

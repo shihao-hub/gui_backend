@@ -14,8 +14,12 @@ redis
 rq # windows 环境不支持（os.fork() 不存在，python 不是跨平台吗？），那 django-rq 是不是也不支持？
 rq-dashboard
 
+pymongo
 mongo
 mongoengine
+
+Pillow
+pytesseract # 在使用 `pytesseract` 之前，您需要先安装 Tesseract OCR。-> https://github.com/UB-Mannheim/tesseract/wiki
 
 beautifulsoup4
 requests
@@ -35,4 +39,3 @@ starlette
 
 pyaudio
 keyboard
-Pillow

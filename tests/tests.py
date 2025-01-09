@@ -129,6 +129,6 @@ def test_c():
 if __name__ == '__main__':
     # unittest.main()
     # test_a() # requests.exceptions.SSLError: HTTPSConnectionPool(host='aliyun.zaiwen.top',
-    # test_b()
-    test_c()
+    test_b()
+    # test_c()
     pass

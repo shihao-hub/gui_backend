@@ -1,13 +1,53 @@
 import functools
 from concurrent.futures import ThreadPoolExecutor
-from typing import TypeVar, Generic, Tuple
+from typing import TypeVar, Generic, Tuple, Union
 
 from apps.api.settings import redis_db as db
 from apps.api.settings import rq_queue
 from apps.core.shared.log import Log
 
 T = TypeVar("T")
+E = TypeVar("E")
 log = Log()
+
+
+class OK(Generic[T, E]):
+    def __init__(self, value: T):
+        self._value = value
+
+    def value(self) -> T:
+        return self._value
+
+
+class Err(Generic[T, E]):
+    def __init__(self, error: E):
+        self._error = error
+
+    def error(self) -> E:
+        return self._error
+
+
+Result = Union[OK[T, E], Err[T, E]]
+
+
+# 一个函数来演示如何使用 Result
+# def divide(a: float, b: float) -> Result[float, str]:
+#     if b == 0:
+#         return Err("Cannot divide by zero")
+#     return OK(a / b)
+#
+#
+# # 使用示例
+# result = divide(10, 2)
+# if isinstance(result, OK):
+#     print(f"Result: {result.value()}")
+# else:
+#     print(f"Error: {result.error()}")
+# result = divide(10, 0)
+# if isinstance(result, OK):
+#     print(f"Result: {result.value()}")
+# else:
+#     print(f"Error: {result.error()}")
 
 
 class OutputParameter(Generic[T]):

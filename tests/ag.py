@@ -91,7 +91,7 @@ class EnableVoiceFunctionObject:
 
         # TODO: 读取录音内容：识别的程度还不够...
         # TODO: 优化使用，用户至少需要知道什么时候开始的...比如声音...
-        filepath = "./recording.wav"
+        filepath = "resources/media/recording.wav"
         with open(filepath, "rb") as file:
             filename = os.path.basename(filepath)
             output.set_value(self.convert_audio_to_text(filename, file))

@@ -183,11 +183,24 @@ def invoke_ai_api(question: str):
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
+def __get_multi_line_input_mode_2():
+    lines = []
+    line = input()
+    while line.strip() != "@end":
+        lines.append(line)
+        line = input()
+    return "\n".join(lines)
+
+
 def _get_multi_line_input():
     # 退而求其次，遇到空行就执行，这导致需要按两次回车...
     lines = []
     while True:
         line = input()
+
+        if line.lstrip("@begin"):
+            return __get_multi_line_input_mode_2()
+
         # 2024-16-00:30：优化，每次提问前面的空行都忽略（使用的时候发现的，由此可见，测试的重要性）
         if line == "" and not lines:
             continue

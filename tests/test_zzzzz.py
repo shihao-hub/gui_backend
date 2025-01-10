@@ -14,4 +14,4 @@ def save_clipboard_image(file_path):
 
 
 if __name__ == "__main__":
-    save_clipboard_image("output_image.png")  # 可以指定你想要的文件名
+    save_clipboard_image("resources/image/output_image.png")  # 可以指定你想要的文件名

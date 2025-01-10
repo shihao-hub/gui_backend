@@ -4,7 +4,7 @@
 2. 判断输入是否为指令，
    如果是命令，则处理命令；
    如果不是命令，则调用 gpt 接口，返回结果
-   
+
 #### 流程图
 
 
@@ -172,7 +172,7 @@ def invoke_ai_api(question: str):
         "content": _generate_prompt(question)
     })
 
-    print(f"{AI_API_STRUCT.MODE} 回复：", end="")
+    print(f"{AI_API_STRUCT.MODE} 回复：", end="", flush=True)
     response = requests.post(AI_API_STRUCT.URL, json=_generate_request_data(), stream=True, verify=False)
 
     messages.append({

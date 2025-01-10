@@ -7,7 +7,7 @@ CHANNELS = 2  # 声道数（立体声）
 RATE = 44100  # 采样率
 CHUNK = 1024  # 每个缓冲区的采样点数
 RECORD_SECONDS = 5  # 录音时长（秒）
-WAVE_OUTPUT_FILENAME = "recording.wav"  # 输出文件名
+WAVE_OUTPUT_FILENAME = "resources/media/recording.wav"  # 输出文件名
 
 
 def main():

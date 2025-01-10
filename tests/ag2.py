@@ -198,7 +198,7 @@ def _get_multi_line_input():
     while True:
         line = input()
 
-        if line.lstrip() == "@begin":
+        if line.strip() == "@begin":
             return __get_multi_line_input_mode_2()
 
         # 2024-16-00:30：优化，每次提问前面的空行都忽略（使用的时候发现的，由此可见，测试的重要性）

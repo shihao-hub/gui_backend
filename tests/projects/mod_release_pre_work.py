@@ -8,6 +8,7 @@
 
 """
 import configparser
+import sqlite3
 from typing import List, Dict
 
 import tqdm
@@ -38,16 +39,40 @@ def get_sequential_lua_codes(context: Dict = None) -> List[str]:
 
 # 2025-01-12-19:36，先去更新模组
 
+
+def config_with_sqlite3(config):
+    # 2025-01-13：这也太复杂了吧？
+    local_mod_dir_path = config.get("BASE_SETTINGS", "LOCAL_MOD_DIR_PATH")
+    mod_dir_name = config.get("VARIABLE_SETTINGS", "MOD_DIR_NAME")
+
+    connect = sqlite3.connect("./mod_release_pre_work.sqlite3")
+
+    connect.execute("CREATE TABLE IF NOT EXISTS local_mod_dir_path (id INTEGER PRIMARY KEY, value TEXT NOT NULL);")
+    if connect.execute("SELECT COUNT(*) FROM local_mod_dir_path;").fetchone()[0] == 0:
+        connect.execute("INSERT INTO local_mod_dir_path(value) VALUES(?)", (local_mod_dir_path,))
+    connect.commit()
+
+    connect.execute("CREATE TABLE IF NOT EXISTS mod_dir_name (id INTEGER PRIMARY KEY, value TEXT NOT NULL);")
+    if connect.execute("SELECT COUNT(*) FROM mod_dir_name;").fetchone()[0] == 0:
+        connect.execute("INSERT INTO mod_dir_name(value) VALUES(?)", (mod_dir_name,))
+    connect.commit()
+
+    connect.close()
+
+
 def main():
     config = configparser.ConfigParser()
     config.read("./mod_release_pre_work.ini")
+
+    # TODO: 用数据库管理配置
+    config_with_sqlite3(config)
 
     # TODO: ini 可以用类序列化然后操作的
     local_mod_dir_path = config.get("BASE_SETTINGS", "LOCAL_MOD_DIR_PATH")
     mod_dir_name = config.get("VARIABLE_SETTINGS", "MOD_DIR_NAME")
 
     context = dict(
-        mod_source_dir=config.get("SETTINGS", "MOD_SOURCE_DIR")
+        mod_source_dir=local_mod_dir_path + rf"\\{mod_dir_name}\\scripts"
     )
 
     for code in get_sequential_lua_codes(context):

@@ -6,4 +6,7 @@ def fn():
     fn2()
 
 
-fn()
+# fn()
+
+# ------
+from test_z import fn

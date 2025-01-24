@@ -1,18 +1,8 @@
-import sys
-import time
-from typing import Callable
+print(123)
 
 
-def show_loading_animation(condition: Callable = None):
-    condition = condition() if condition else True
-    spinner = ("|", "/", "-", "\\",)
-    idx = 0
-    while condition:
-        sys.stdout.write(f"\r{spinner[idx]} Loading...")
-        sys.stdout.flush()
-        idx = (idx + 1) % len(spinner)
-        time.sleep(0.1)
+def fn():
+    pass
 
 
-if __name__ == '__main__':
-    show_loading_animation(lambda: False)
+print("\u63a5\u53e3\u672a\u6ce8\u518c:None")

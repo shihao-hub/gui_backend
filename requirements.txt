@@ -1,25 +1,25 @@
 # TODO: python 依赖管理工具有哪些？requirements.txt 太难用了。（我绷不住了... pip install -r requirements.txt 中文提示编码问题...）
-# python3.12
+# Python 3.12
+
+# -------------------------------------------------------------------------------------------------------------------- #
+
 django-ninja
 django-ninja-crud
 django-ninja-extra
 
-django-cors-headers # 专门用于处理 CORS 的库，确保前端能顺利与 Django REST API 通信（不确定有没有用上这个库）
+uvicorn
+starlette
+# logfire # -> logfire.exceptions.LogfireConfigError: Failed to request a device code.
 
-django-allauth # gpt 回复
-jwt
+# -------------------------------------------------------------------------------------------------------------------- #
 
 redis
-
-rq # windows 环境不支持（os.fork() 不存在，python 不是跨平台吗？），那 django-rq 是不是也不支持？
-rq-dashboard
 
 # pymongo # pymongo 是 MongoDB 官方 Python 驱动程序，pip install mongoengine 即可自动下载，比较原始，但是够用了
 mongo # mongo 建立在 pymongo 的基础上，提供了面向对象的接口来简化与 MongoDB 数据库的交互。此库的目标是让开发者可以更容易地使用 MongoDB，利用 Python 的语法特性来进行数据库操作。
 mongoengine # mongoengine 旨在让 Python 开发者能够以更面向对象的方式与 MongoDB 数据库进行交互。它提供了与传统的关系型数据库 ORM 类似的接口，使得开发者能够使用 Python 类定义 MongoDB 文档，并使用简单的 API 执行 CRUD（创建、读取、更新、删除）操作。
 
-Pillow
-pytesseract # 在使用 `pytesseract` 之前，您需要先安装 Tesseract OCR。-> https://github.com/UB-Mannheim/tesseract/wiki
+# -------------------------------------------------------------------------------------------------------------------- #
 
 beautifulsoup4
 requests
@@ -27,15 +27,23 @@ aiohttp
 
 orjson
 
+# -------------------------------------------------------------------------------------------------------------------- #
+django-cors-headers # 专门用于处理 CORS 的库，确保前端能顺利与 Django REST API 通信（不确定有没有用上这个库）
+
+django-allauth # gpt 回复
+jwt
+
+rq # windows 环境不支持（os.fork() 不存在，python 不是跨平台吗？），那 django-rq 是不是也不支持？
+rq-dashboard
+
+Pillow
+pytesseract # 在使用 `pytesseract` 之前，您需要先安装 Tesseract OCR。-> https://github.com/UB-Mannheim/tesseract/wiki
+
 pangu
 chardet
 
 SpeechRecognition
 pydub
-
-uvicorn
-starlette
-# logfire # -> logfire.exceptions.LogfireConfigError: Failed to request a device code.
 
 pyaudio
 keyboard

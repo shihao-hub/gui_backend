@@ -58,6 +58,7 @@ flowchart TD
 
 > to be continue ...
 """
+import json
 import platform
 import os
 import re
@@ -297,8 +298,16 @@ def _generate_prompt(raw_question: str):
     return raw_question
 
 
+def __persist_messages():
+    filename = f"./ag2_{time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))}.json"
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(json.dumps(messages, ensure_ascii=False))
+    # log.info("Persisting messages success!")
+
+
 def _attempt_to_clear_messages():
-    if len(messages) > MESSAGES_MAX_SIZE:
+    if len(messages) >= MESSAGES_MAX_SIZE:
+        __persist_messages()
         messages.clear()
 
 
@@ -442,6 +451,8 @@ def get_first_non_empty_line():
 
 def main():
     # main 是主函数，main 用到的函数我认为可以不加 _，因为 _ 实在太丑了。当然，如果在类中，那最好还是加吧。
+
+    # TODO: 组合函数模式 + SLAP
 
     while True:
         # Adding try-except expression to catch any exceptions, so that the program can continue running.
